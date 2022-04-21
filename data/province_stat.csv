@@ -1,0 +1,25 @@
+Province,Region,Group,Business Creation 2020,Business Creation 2021,Average Vaccionation Rate (%),Vaccine-preventable cases per 1K
+Azuay,Sierra,Control,349,219, 39.28 , 0.88 
+Bolivar,Sierra,Control,15,11, 37.68 , 0.93 
+Cañar,Sierra,Control,36,14, 47.20 , 1.13 
+El Oro,Costa,Control,278,298, 40.12 , 1.09 
+Esmeraldas,Costa,Control,81,74, 33.67 , 1.61 
+Galapagos,Galápagos,Control,50,34, 66.99 , 2.11 
+Guayas,Costa,Control,2544,1965, 33.80 , 0.79 
+Imbabura,Sierra,Control,86,82, 39.43 , 1.26 
+Loja,Sierra,Control,113,82, 41.30 , 0.91 
+Los Rios,Costa,Control,139,99, 31.47 , 0.70 
+Manabi,Costa,Control,318,299, 37.95 , 1.59 
+Napo,Oriente,Control,13,10, 38.85 , 0.80 
+Pichincha,Sierra,Control,1898,1394, 41.49 , 0.76 
+Santa Elena,Costa,Control,62,68, 32.33 , 0.96 
+Tungurahua,Sierra,Control,120,96, 38.32 , 3.67 
+Carchi,Sierra,Treatment,20,10, 31.26 , 3.31 
+Chimborazo,Sierra,Treatment,90,87, 36.48 , 2.95 
+Cotopaxi,Sierra,Treatment,75,68, 37.58 , 2.73 
+Morona Santiago,Oriente,Treatment,69,30, 25.61 , 1.66 
+Orellana,Oriente,Treatment,50,40, 35.32 , 0.54 
+Pastaza,Oriente,Treatment,13,17, 29.78 , 1.03 
+Santo Domingo De Los Tsachilas,Sierra,Treatment,132,103, 32.24 , 1.65 
+Sucumbios,Oriente,Treatment,58,34, 33.17 , 1.67 
+Zamora Chinchipe,Oriente,Treatment,115,83, 33.92 , 1.97 
