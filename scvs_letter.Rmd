@@ -277,23 +277,25 @@ reg_did_list<-list(simple_lbuss,
                    vax_lnsas,
                    trend_lnsas)
 
-# ========================================== Wild Bootstrap ==============================================================
+# ========================================== Wild Bootstrap ======================================
+
+# All this stuff has been commented out because the package has a bug *June 2022
 
 # Do wild bootstrap tests of the trend-controlled regressions
 
-boot_lbuss<-boottest(trend_lbuss,
-                     clustid = c('province', 'month'),
-                     param = 'did',
-                     B = 9999,
-                     seed = 5555)
-summary(boot_lbuss)
+# boot_lbuss<-boottest(trend_lbuss,
+                     #clustid = c('province', 'month'),
+                     #param = 'did',
+                     #B = 9999,
+                     #seed = 5555)
+# summary(boot_lbuss)
 
-boot_lnsas<-boottest(trend_lnsas,
-                     clustid = c('province', 'month'),
-                     param = 'did',
-                     B = 9999,
-                     seed = 5555)
-summary(boot_lnsas)
+# boot_lnsas<-boottest(trend_lnsas,
+                     #clustid = c('province', 'month'),
+                     #param = 'did',
+                     #B = 9999,
+                     #seed = 5555)
+# summary(boot_lnsas)
 
 # The same but for the variable ones
 
