@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-0.9.515">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Daniel Hernan Sánchez Pazmiño">
+
+<title>Immunizing the Economy: A Causality Discussion on Vaccines and Economic Recovery</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+<script src="scvs_article_covid_vax_files/libs/clipboard/clipboard.min.js"></script>
+<script src="scvs_article_covid_vax_files/libs/quarto-html/quarto.js"></script>
+<script src="scvs_article_covid_vax_files/libs/quarto-html/popper.min.js"></script>
+<script src="scvs_article_covid_vax_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="scvs_article_covid_vax_files/libs/quarto-html/anchor.min.js"></script>
+<link href="scvs_article_covid_vax_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="scvs_article_covid_vax_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="scvs_article_covid_vax_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="scvs_article_covid_vax_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="scvs_article_covid_vax_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Immunizing the Economy: A Causality Discussion on Vaccines and Economic Recovery</h1>
+<p class="subtitle lead">Inmunizando a la Economía: Una Discusión de Causalidad Sobre Vacunas y Reactivación Económica</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Daniel Hernan Sánchez Pazmiño </p>
+          </div>
+  </div>
+    
+    
+  </div>
+  
+
+</header>
+
+<section id="abstract" class="level1">
+<h1>Abstract</h1>
+<p>The COVID-19 pandemic severely disrupted economic activity worldwide. In Ecuador, the pandemic found an epicenter in the city of Guayaquil during April 2020, where the excess death rate skyrocketed to almost 700%. However, in mid-2021, Ecuador had a glimpse of hope again as the vaccination process turned extremely effective and under a hundred days half of the country’s population was inoculated. While since then excess deaths have remained at all-time lows in the pandemic era, the Ecuadorian economy remains weakened. This paper discusses a causal effect of vaccination on economic recovery by implementing a two-way fixed effects difference-in-differences estimator on a repeated cross section of Ecuador 2020-2021 at the province-level. Evidence is found that provinces with apparent vaccine-hesitant populations see about 25% less business creation than provinces with openness to vaccination. This finding stresses the importance of fostering vaccination among populations in a country, especially if booster shots are necessary in the future. This effect is found by leaving out the creation of SAS (Sociedad de Acciones Simplificada) businesses, a new firm legal figure introduced to the country in Mid-May, which prompted the creation of many new formal businesses due to the reduction of entry costs. Only minimal evidence of differential prior trends is found, which supports the existence of causality. Finally, other estimation methodologies are proposed to identify a more precise causal effect of vaccination on economic activity.</p>
+</section>
+<section id="resumen" class="level1">
+<h1>Resumen</h1>
+<p>La pandemia del COVID-19 interrumpió severamente la actividad económica mundial. En Ecuador, la pandemia encontró un epicentro en la ciudad de Guayaquil en abril del 2020, en donde la tasa de mortalidad en exceso llegó a casi el 700%. Sin embargo, en la mitad del 2021 el Ecuador tuvo un destello de esperanza cuando el proceso de vacunación se tornó extremadamente efectivo y en menos de cien días más de la mitad de población se inmunizó completamente. Aunque desde ese momento las muertes en exceso se mantienen en mínimos históricos en la era de la pandemia, la economía ecuatoriana se mantiene debilitada. Este artículo discute un efecto causal de la vacunación en la reactivación económica utilizando un estimador diferencia-en-diferencias de efectos fijos de doble vía en una sección transversal repetida del Ecuador 2020-2021 a nivel provincial. Se encuentra evidencia de que provincias con poblaciones aparentemente resistentes a la vacunación ven aproximadamente un 25% menos de creación de empresas, en comparación a provincias más abiertas a la vacunación. Este hallazgo resalta la importancia de fomentar la vacunación en las poblaciones de un país, especialmente si dosis de refuerzo se requieren en el futuro. Este efecto se encuentra eliminando la creación de las empresas SAS (Sociedad de Acciones Simplificada), una figura legal de compañía introducida en el país en la mitad del 2020 que ocasionó la creación de nuevas firmas debido a la reducción considerable de costos de entrada. Se encuentra evidencia mínima de tendencias previas no similares, lo que apoya a la existencia de causalidad. Finalmente, se proponen otras metodologías de estimación para identificar un efecto causal más preciso de la vacunación en la actividad económica.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
