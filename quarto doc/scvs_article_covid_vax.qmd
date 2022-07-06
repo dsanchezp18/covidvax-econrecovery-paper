@@ -2,8 +2,10 @@
 title: "Immunizing the Economy: A Causality Discussion on Vaccines and Economic Recovery"
 subtitle: "Inmunizando a la Economía: Una Discusión de Causalidad Sobre Vacunas y Reactivación Económica"
 author: "Daniel Hernan Sánchez Pazmiño"
+bibliography: refs.bib
 format: 
   html: default
+  docx: default
 editor: source
 execute:
   echo: false
@@ -54,3 +56,6 @@ Yet once again Ecuador became the center of international attention in the secon
 The Ecuadorian economy grew 4.2% in 2021 [@BCE.2022], 50% more than the October 2021 IMF projection [-@IMF.Oct2021].The Ecuadorian Central Bank attributes the increases due to important economic gains in the oil, tourism, agriculture and commerce industries, citing the economic effects brought about by the successful vaccine rollout as the main motivator for the internal economic reactivation. However, the statement by the institution may pose an important causal inference issue: even if vaccines have proven to be successful in mitigating COVID-19 infection [@Katella.2022], not much is known about their effect on economic activity. Additionally, the vaccination process may also correlate with other reactivation motivators which may become confounders. Among them stand the `r (78.90/48.52) * 100` % increase in the price of the WTI oil barrel [@MarketWatch.2022] and the loosening of pandemic restrictions which took place after Lasso took office. 
 
 The aim of this paper is to discuss the possibility of a causal effect of COVID-19 vaccination in economic recovery. This is done by implementing a regression-based approach to a difference-in-differences research design to estimate an average treatment effect of vaccine hesitancy in two proxies of economic activity. Province-level data from Ecuador on several economic and demographic indicators published in a monthly basis is used for the econometric analysis, which focuses on the 24 months between January 2020 and December 2021. 
+
+# References
+
