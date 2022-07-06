@@ -57,5 +57,28 @@ The Ecuadorian economy grew 4.2% in 2021 [@BCE.2022], 50% more than the October 
 
 The aim of this paper is to discuss the possibility of a causal effect of COVID-19 vaccination in economic recovery. This is done by implementing a regression-based approach to a difference-in-differences research design to estimate an average treatment effect of vaccine hesitancy in two proxies of economic activity. Province-level data from Ecuador on several economic and demographic indicators published in a monthly basis is used for the econometric analysis, which focuses on the 24 months between January 2020 and December 2021. 
 
+# Literature Review 
+
+In general, literature on COVID-19 and its economic effects which focuses on causal inference is limited. More has been said about causal effects of vaccination and social distancing measures on health outcomes. Causal evidence has been found in support of social distancing and lockdown measures as a means to reduce infections in the COVID-19 pandemic [@Banerjee.2020; @Sharkey.2020] as well as in other pandemics [@Stern.2009; Bootsma.2007; @Mandavilli.2020]. Numerous randomized trials have been run to assess the effects of COVID-19 vaccines, finding that these are safe for mass distribution and effective in slowing down the spread of the virus [@Chen.2021;@Polack.2020;@Yap.2021; @Zheng.2022; @Deb.2021], deeming them essential in the fight against the pandemic.
+
+Regarding economic impacts, it is understood that pandemics hamper economic activity through several channels. According to @Brodeur.2021, these channels are the impact of social distancing measures, direct and indirect costs (hospitalization, loss of labor and production) as well as offsetting and cascading effects as the disruption of services are the most important. The direct channels connect macroeconomically to reductions in household consumption and wealth. The macroeconomic models which were studied by @Brodeur.2021 predict a mostly demand-deficient recession, where policy that benefits the economy's supply may not be successful in inducing recovery. Other studies quantified the opportunity cost of shutdowns in the economy, finding that shutdowns put market production in a 25% production deficit, and that medical development and innovation may reduce the shutdown cost in about 70% [@Mulligan.2021]. Additionally, @Deb.2022 find that containment measures hurt economic activity, associating a containment measure with a 10 percent loss in industrial production over 30 days of measure implementation. Regarding business creation, @Meunier.2022 find that newly registered firms fell in 58% of economies in 2020 relative to 2019, when the normal trend was to see new business creation in 2/3 of economies. 
+
+If COVID-19 was indeed an aggregate demand-intensive shock, it is natural to see a fall in business creation as potential customers become wary of spending in an uncertain environment, where health risks appear to affect the likelihood of spending. If vaccines are indeed the best way to fight the pandemic, it would be expected that economies with higher vaccination rates experience higher economic recovery. The effect of vaccines might be two-fold: on one hand more vaccination may foster less pandemic restrictions which would help economic activity as businesses are less restrained. On the other hand, vaccination may foster economic recovery by reducing the likelihood of contagion and thus increase aggregate demand for goods and services, as the likelihood of contracting COVID-19 is smaller. 
+
+@Furceri.2021 develop an empirical model of vaccination and economic effects across 46 countries, finding a positive statistically significant relationship of vaccination rates and economic activity proxied by nitrogen emissions. The effect could be understood as causal given that "vaccine surprises" are used, the key effect being that an unexpected increase in vaccination per capita is associated with increases in economic activity. Furthermore, it has been said that countries with higher vaccination rates were expected to make stronger economic recoveries according to IMF data, as the projections for regions with higher vaccine inequality were revised downward by April 2021 [@UNDP.2022]. However, this analysis does not make a causal investigation, as indeed it is countries that have been historically richer which had higher vaccination rates in 2022. The lack of causal inference research regarding this key topic is evident, considering that the results of the only study which infers a causal effect may not be applicable to countries outside their sample or at time horizons which can include stronger COVID-19 variants. 
+
+# Methodology
+
+## Data
+
+A province-level database was constructed for this paper. Monthly-published data at the province level was recovered from various government sources to construct a repeated cross-section in which every province has 12 observations on several economic and demographic variables. Thus, the database has `r 24*12` observations.
+
+To proxy economic recovery, data from the Ecuadorian regulatory and supervisory public institution for private companies *Superintendencia de Compañías, Valores y Seguros* (SCVS) is used as a dependent variable. Namely, business creation is used as a proxy for economic recovery, based on the [Companies' Directory database](https://mercadodevalores.supercias.gob.ec/reportes/directorioCompanias.jsf). The number of businesses created in any given month between January 2020 and December 2021 was computed based on the date of creation of the business in the SCVS system. The following table describes all variables used in the paper.
+
+```{r}
+
+```
+
+
 # References
 
