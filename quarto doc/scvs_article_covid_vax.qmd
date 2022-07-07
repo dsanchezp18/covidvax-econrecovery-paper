@@ -76,6 +76,18 @@ A province-level database was constructed for this paper. Monthly-published data
 To proxy economic recovery, data from the Ecuadorian regulatory and supervisory public institution for private companies *Superintendencia de Compañías, Valores y Seguros* (SCVS) is used as a dependent variable. Namely, business creation is used as a proxy for economic recovery, based on the [Companies' Directory database](https://mercadodevalores.supercias.gob.ec/reportes/directorioCompanias.jsf). The number of businesses created in any given month between January 2020 and December 2021 was computed based on the date of creation of the business in the SCVS system. The following table describes all variables used in the paper.
 
 ```{r}
+# | label: descriptive-table
+# Load my data description table from CSv (I did this one on Excel)
+
+data_descrip_df<-read.csv('../data/data_table.csv')
+
+# Print the table using the datasummary command
+
+# Print a pretty table
+
+datasummary_df(data = data_descrip_df,
+               output = 'markdown',
+               title = 'Variable descriptions and sources')
 
 ```
 

@@ -1,7 +1,7 @@
 Variable,Source,Note
-Business creation,"Superintendencia de Compañías, Valores y Seguros",Number of businesses created in any given month and province during 2020-2021. 
+Business creation,SCVS,Number of businesses created in any given month and province during 2020-2021. 
 Inmuno-preventable cases,Ministry of Health,"Parotiditis, Chickenpox and Hepatitis B."
-Vaccination rate,Datos-Ecuacovid Project,Data obtained from the Ministry of Health's Vacunómetro.
+Vaccination rate,Datos-Ecuacovid Project,Data obtained from the Ministry of Health's Vacunometro.
 2020 Population Projections,Datos-Ecuacovid Project,Data obtained from INEC Census Projections.
 Excess deaths,Excess Deaths Dashboard by Naranjo (2022),Normal death rate computed based on historic death rates per province.
 Thefts,Ministry of Government,Theft reports to the police
