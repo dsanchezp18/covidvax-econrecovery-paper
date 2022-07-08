@@ -5,8 +5,10 @@ author: "Daniel Hernan Sánchez Pazmiño"
 bibliography: refs.bib
 format: 
   html: default
-  docx: default
+  docx: 
+    reference-doc: scvs-template.docx
 editor: source
+number-sections: true
 execute:
   echo: false
   message: false
@@ -35,11 +37,11 @@ df<-read.csv('../data/df.csv')
 ```
 
 
-# Abstract
+# Abstract {.unnumbered}
 
 The COVID-19 pandemic severely disrupted economic activity worldwide. In Ecuador, the pandemic found an epicenter in the city of Guayaquil during April 2020, where the excess death rate skyrocketed to almost 700%. However, in mid-2021, Ecuador had a glimpse of hope again as the vaccination process turned extremely effective and under a hundred days half of the country’s population was inoculated. While since then excess deaths have remained at all-time lows in the pandemic era, the Ecuadorian economy remains weakened. This paper discusses a causal effect of vaccination on economic recovery by implementing a two-way fixed effects difference-in-differences estimator on a repeated cross section of Ecuador 2020-2021 at the province-level. Evidence is found that provinces with apparent vaccine-hesitant populations see about 25% less business creation than provinces with openness to vaccination. This finding stresses the importance of fostering vaccination among populations in a country, especially if booster shots are necessary in the future. This effect is found by leaving out the creation of SAS (Sociedad de Acciones Simplificada) businesses, a new firm legal figure introduced to the country in mid-May, which prompted the creation of many new formal businesses due to the reduction of entry costs. Only minimal evidence of differential prior trends is found, which supports the existence of causality. Finally, other estimation methodologies are proposed to identify a more precise causal effect of vaccination on economic activity.
 
-# Resumen
+# Resumen {.unnumbered}
 
 La pandemia del COVID-19 interrumpió severamente la actividad económica mundial. En Ecuador, la pandemia encontró un epicentro en la ciudad de Guayaquil en abril del 2020, en donde la tasa de mortalidad en exceso llegó a casi el 700%. Sin embargo, en la mitad del 2021 el Ecuador tuvo un destello de esperanza cuando el proceso de vacunación se tornó extremadamente efectivo y en menos de cien días más de la mitad de población se inmunizó completamente. Aunque desde ese momento las muertes en exceso se mantienen en mínimos históricos en la era de la pandemia, la economía ecuatoriana se mantiene debilitada. Este artículo discute un efecto causal de la vacunación en la reactivación económica utilizando un estimador diferencia-en-diferencias de efectos fijos de doble vía en una sección transversal repetida del Ecuador 2020-2021 al nivel provincial. Se encuentra evidencia de que provincias con poblaciones aparentemente resistentes a la vacunación ven aproximadamente un 25% menos de creación de empresas, en comparación a provincias más abiertas a la vacunación. Este hallazgo resalta la importancia de fomentar la vacunación en las poblaciones de un país, especialmente si dosis de refuerzo se requieren en el futuro. Este efecto se encuentra eliminando la creación de las empresas SAS (Sociedad de Acciones Simplificada), una figura legal de compañía introducida en el país a mediados de 2020 que ocasionó la creación de nuevas firmas debido a la reducción considerable de costos de entrada. Se encuentra evidencia mínima de tendencias previas no similares, lo que apoya a la existencia de causalidad. Finalmente, se proponen otras metodologías de estimación para identificar un efecto causal más preciso de la vacunación en la actividad económica.
 
@@ -88,6 +90,30 @@ data_descrip_df<-read.csv('../data/data_table.csv')
 datasummary_df(data = data_descrip_df,
                output = 'markdown',
                title = 'Variable descriptions and sources')
+
+```
+## Empirical approach
+
+A differences-in-differences design is implemented to investigate a potential causal effect of vaccination rates in business creation. The shock that will be exploited for the estimation will be the Delta Variant. This variant of COVID-19 was initially identified in India in late 2020, and spread to the United States in June 2021. It was identified that while the variant's symptoms were the same as the original disease, they seemed to be more severe in the respiratory tract and it also spread quicker. Additionally, the variant seemed to put unvaccinated people at a much higher risk than other variants. It quickly became the principal variant in the United States throughout the fall of 2021 [@Katella.2022; @UCD.2022]. In Ecuador, cases of this variant were initially identified in the summer of 2021 and by October it became the dominant variant in COVID-19 infections [@Mendoza.2021; @Heredia.2021]. This shock is used because given the characteristics of the "new" disease it would be easier to elicit differences in outcomes between groups with different propensity to become vaccinated against COVID-19.
+
+The treatment group will be defined in terms of vaccination hesitancy and actual COVID-19 vaccination rates. In order to accurately exploit vaccination hesitancy and not confound it with logistic/movement restriction issues, the treatment group is defined in reference to the number of vaccine-preventable diseases detected in each province through time. The Ministry of Health has made available yearly vaccine-preventable disease tabloids ([gacetas inmunoprevenibles](https://www.salud.gob.ec/gacetas-inmunoprevenibles/)) which tabulate yearly reported cases of vaccine-preventable diseases at the province level for 2019 and 2020. With this information, the number of vaccine-preventable diseases per thousand is computed with basis to the 2020 population projections (no 2021 projections have been made available). Also, the average monthly vaccination rate is computed, which can be seen at group level in the following table. The treatment group is then composed of the following provinces: Carchi, Chimborazo, Cotopaxi, Morona Santiago, Orellana,  Pastaza, Santo Domingo, Sucumbíos, Zamora Chinchipe. These provinces comply with two conditions: higher than average vaccine-preventable cases per one thousand and lower than average monthly vaccination rates. The following table shows some descriptive statistics for the groups.
+
+```{r}
+# | label: group-data-table
+
+group_df<-read.csv('../data/group_stat.csv')
+
+# Print a pretty table
+
+datasummary_df(data = group_df,
+               output ='markdown',
+               align = 'lllll',
+               title = 'Descriptive Statistics for Treatment and Control Groups',<
+               col.names = c('Group',
+                             'New Businesses 2020', 
+                             'New Businesses 2021', 
+                             'Mean Monthly Vaccination Rate (%)',
+                             'Mean vaccine-preventable cases per thousand'))
 
 ```
 
