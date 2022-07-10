@@ -9,11 +9,11 @@ format:
     reference-doc: scvs-template.docx
 editor: source
 number-sections: true
-execute:
-  echo: false
-  message: false
-  warning: false
-  cache: true
+knitr:
+  opts_chunk: 
+    message: false
+    echo: false
+    warning: false
 ---
 
 ```{r}
@@ -129,6 +129,7 @@ Given that the treatment variable implies some sort of vaccine hesitancy among t
 
 ```{r}
 # | label: previous-model-data-wrangling
+# | include: false
 # Some data wrangling for the estimation of the regression models
 
 # Create the dependent variables in log form and relevel factors
@@ -154,6 +155,158 @@ df<-
 ```
 
 ## Model Results
+```{r, include = F}
+# | label: regressions
+# | include: false
+# | output: false
 
+# Here we write the code for our regressions to be presented in the tables in the document. 
+# We cluster by province and by month.
+
+# Models with total business creation ---------------------------------------------------------------------------------------
+
+# Simple one, only fixed effects + did estimator.
+
+simple_lbuss<-
+  feols(lbuss ~ did | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(simple_lbuss)
+
+# With province-month interactions
+
+provmonth_lbuss<-
+  feols(lbuss ~ did | province^month,
+        cluster = ~ province + month,
+        data = df)
+
+summary(provmonth_lbuss)
+
+# With more variables
+
+vars_lbuss<-
+  feols(lbuss ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(vars_lbuss)
+
+# With vaccination rate (at least one dose)
+
+vax_lbuss<-
+  feols(lbuss ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + vax_leastone
+        | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(vax_lbuss)
+
+# Including a trend term to correct for violation of paralell trends
+
+trend_lbuss<-
+  feols(lbuss ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df)
+
+summary(trend_lbuss)
+
+# Models with non-SAS business creation ------------------------------------------------------------------------------------
+
+# Simple one
+
+simple_lnsas<-
+  feols(lnsas ~ did | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(simple_lnsas)
+
+# With province-month interactions
+
+provmonth_lnsas<-
+  feols(lnsas~ did | province^month,
+        cluster = ~ province + month,
+        data = df)
+
+summary(provmonth_lnsas)
+
+# With more variables
+
+vars_lnsas<-
+  feols(lnsas ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(vars_lnsas)
+
+# With vaccination rate
+
+vax_lnsas<-
+  feols(lnsas ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + vax_leastone
+        | province + monthyear,
+        cluster = ~ province + month,
+        data = df)
+
+summary(vax_lnsas)
+
+# With trend
+
+trend_lnsas<-
+  feols(lnsas ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df)
+
+summary(trend_lnsas)
+
+# Do a list of regressions -----------------------------------------------------------------------------------------------
+
+reg_did_list<-list(simple_lbuss,
+                   provmonth_lbuss,
+                   vars_lbuss,
+                   vax_lbuss,
+                   trend_lbuss,
+                   simple_lnsas,
+                   provmonth_lnsas,
+                   vars_lnsas,
+                   vax_lnsas,
+                   trend_lnsas)
+
+
+```
+```{r}
+
+# label: regressions_table1
+# output: asis
+
+# To produce the table that I used in the actual paper, I created a dataframe of the model results and exported to Excel to include an edited table. I produce the XL table that I used in the paper in the edited_reg_table.xlsx file. 
+
+# I comment out the code to produce the XL file here here, and include a markdown table which is a bit simpler in formatting.  
+
+# modelsummary(reg_did_list,
+#              output = 'dataframe',
+#              title = 'TWFE DiD Models Estimates',
+#              stars = c('*' = .1, '**' = 0.05, '***' = .01)) %>% write.xlsx('../tables/regression_tables.xlsx')
+
+# I also haven't been able to produce a horizontal page layout for some pages in Word. This would only work in PDF. Thus, the table looks a bit shitty in the document at the end. 
+
+# We construct the map of coefficient names
+
+coefficient_names<-c('(Intercept)' = 'Constant',
+                     'did' = 'Treatment x Post', 
+                     'excessd_rate' = 'Excess Deaths Rate',
+                     'job_change' = 'Job Contracts Variation',
+                     'v_deaths' = 'Homicides',
+                     'robbery' = 'Thefts',
+                     'transit_acc' = 'Transit Accidents',
+                     'vax_leastone' = 'Vaccination Rate',
+                     'time_cont' = 'Time Trend') 
+
+modelsummary(reg_did_list,
+             output = 'markdown',
+             title = 'Baseline Regression Results',
+             coef_map = coefficient_names,
+             stars = c('*' = .1, '**'=0.05, '***' = .01))
+```
 # References
 
