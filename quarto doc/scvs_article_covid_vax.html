@@ -234,9 +234,6 @@ div.csl-indent {
 </section>
 <section id="results" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Results</h1>
-<div class="cell">
-
-</div>
 <section id="model-results" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="model-results"><span class="header-section-number">4.1</span> Model Results</h2>
 <div class="cell">
@@ -563,14 +560,215 @@ div.csl-indent {
 <p><strong>Note:</strong> ^^ * p &lt; 0.1, ** p &lt; 0.05, *** p &lt; 0.01</p>
 </div>
 </div>
+<p>The table above summarizes the estimation results. The Appendix shows results on wild bootstrap tests for the time trend controlled regressions and other models estimated later in the paper.</p>
+<p>Considering total business creation, it is found that the DiD estimate is negative and significant. In all models a smaller amount of total business creation is found in the treatment provinces in the treatment period. Model 2 considers interaction fixed-effects between month and province. With this control it is hoped that both time variant and invariant characteristics within a province are partialled-out from the DiD estimate. Models 3 and 4 consider some time-varying variables which do not affect the direction and statistical significance of the key parameter. It is determined that a one percentage point increase in the excess death rate is associated with an about 13% decrease in business creation. Other variables do not maintain a statistically significant relationship with total business creation. Model 5 accounts for a time trend to control for the possibility of divergent prior trends between treatment and control groups. The DiD estimate significantly increases its magnitude in absolute terms: a 49.5% decrease in business creation is associated with vaccine-hesitant provinces. The time trend is positive and significant. It is also found that an extra one robbery case is associated with a 0.01% increase in business creation; this may demonstrate the possibility that provinces with higher economic activity are also more unsafe. Results of the DiD estimate on Models 3 and 5 are robust to the wild bootstrap test as seen in the Appendix.</p>
+<p>Models 6-10 follow the same progression as Models 1-5 but considering creation of non-SAS businesses. With this change, the DiD estimate is only statistically significant when controlling for province and month interaction terms and when controlling for time trend. However, the wild bootstrap test carried out on Model 8’s DiD estimate shows that the negative average treatment effect is indeed significant at the 95% confidence level. The wild bootstrap test also allow to say that the DiD estimate on Model 8 is statistically significant at the 90% confidence level. The excess death rate coefficient keeps its significance and magnitude except in the case of time-trend model, when a one percentage point increase in the rate is associated with a 22.2% decrease in business creation (non-SAS). The excess rate potentially illustrates two channels of causation between COVID-19 and deaths. The first one is actual COVID-19 deaths, whose official metric may be significantly misrreported, at least during the beginning of the pandemic <span class="citation" data-cites="OrtizPrado.2020">(<a href="#ref-OrtizPrado.2020" role="doc-biblioref">Ortiz-Prado and Fernández-Naranjo 2020</a>)</span>. The second one might be the deaths caused by the inability of health systems to cope with all health emergencies during the pandemic as they were saturated from COVID-19 cases. The health system in Ecuador had already been impacted from low government budget <span class="citation" data-cites="Mena.nd">(<a href="#ref-Mena.nd" role="doc-biblioref">Mena, n.d.</a>)</span>, which is why this channel of causation would be very significant. Whatever the relative importance these two channels may have on the excess death rate, the fact that the direction of the effect is consistently negative may mean that the partial effect of COVID-19 health impact is consistently detrimental for business creation in Ecuador.</p>
+<p>Additionally, the fact that in models which consider both total and non-SAS business creation the coefficient on vaccination rate is not statistically different from zero supports the idea that the treatment and control groups are well defined as they already capture the differences between real vaccine-hesitancy.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>NULL</code></pre>
+</div>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<caption>Baseline Regression Results</caption>
+<colgroup>
+<col style="width: 21%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: center;">Model 1</th>
+<th style="text-align: center;">Model 2</th>
+<th style="text-align: center;">Model 3</th>
+<th style="text-align: center;">Model 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Treatment x Post</td>
+<td style="text-align: center;">-0.479***</td>
+<td style="text-align: center;">-0.449**</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.149)</td>
+<td style="text-align: center;">(0.193)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Excess Deaths Rate</td>
+<td style="text-align: center;">-0.051</td>
+<td style="text-align: center;">-0.057</td>
+<td style="text-align: center;">-0.204*</td>
+<td style="text-align: center;">-0.210*</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.089)</td>
+<td style="text-align: center;">(0.082)</td>
+<td style="text-align: center;">(0.108)</td>
+<td style="text-align: center;">(0.097)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Job Contracts Variation</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.000)</td>
+<td style="text-align: center;">(0.000)</td>
+<td style="text-align: center;">(0.000)</td>
+<td style="text-align: center;">(0.000)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Homicides</td>
+<td style="text-align: center;">0.007</td>
+<td style="text-align: center;">0.014**</td>
+<td style="text-align: center;">0.000</td>
+<td style="text-align: center;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.005)</td>
+<td style="text-align: center;">(0.006)</td>
+<td style="text-align: center;">(0.004)</td>
+<td style="text-align: center;">(0.004)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Thefts</td>
+<td style="text-align: center;">0.005**</td>
+<td style="text-align: center;">0.005***</td>
+<td style="text-align: center;">0.001</td>
+<td style="text-align: center;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.002)</td>
+<td style="text-align: center;">(0.001)</td>
+<td style="text-align: center;">(0.000)</td>
+<td style="text-align: center;">(0.001)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Transit Accidents</td>
+<td style="text-align: center;">0.003</td>
+<td style="text-align: center;">0.003*</td>
+<td style="text-align: center;">0.003</td>
+<td style="text-align: center;">0.003</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.003)</td>
+<td style="text-align: center;">(0.002)</td>
+<td style="text-align: center;">(0.003)</td>
+<td style="text-align: center;">(0.002)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Time Trend</td>
+<td style="text-align: center;">0.057***</td>
+<td style="text-align: center;">-0.003</td>
+<td style="text-align: center;">0.052**</td>
+<td style="text-align: center;">-0.008</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.017)</td>
+<td style="text-align: center;">(0.016)</td>
+<td style="text-align: center;">(0.018)</td>
+<td style="text-align: center;">(0.017)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Num.Obs.</td>
+<td style="text-align: center;">528</td>
+<td style="text-align: center;">528</td>
+<td style="text-align: center;">576</td>
+<td style="text-align: center;">576</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RMSE</td>
+<td style="text-align: center;">0.57</td>
+<td style="text-align: center;">0.59</td>
+<td style="text-align: center;">0.62</td>
+<td style="text-align: center;">0.63</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Std.Errors</td>
+<td style="text-align: center;">by: province &amp; month</td>
+<td style="text-align: center;">by: province &amp; month</td>
+<td style="text-align: center;">by: province &amp; month</td>
+<td style="text-align: center;">by: province &amp; month</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FE: province</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">X</td>
+<td style="text-align: center;">X</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> ^^ * p &lt; 0.1, ** p &lt; 0.05, *** p &lt; 0.01</p>
+</div>
+</div>
+<p>The table above considers two robustness checks run on the models which account for time-trends in the previous table, for all two dependent variables used. Models 1-2 confirm that the results of Models 1-2 are robust to dropping the biggest two provinces: Pichincha and Guayas. Changes are seen in the coefficients of the regressors. The excess death rate effect is lost, most likely due to the fact that excess deaths have concentrated on those two provinces throughout the pandemic. Models 4*-5* focus on an “alternate” treatment variable which equals 1 for treatment periods and only for province Pichincha. It would be expected that no effect is found with this artificial treatment, as confirmed by the results in the table. All results are also robust to the wild bootstrap test, as seen in the Appendix.</p>
+</section>
+<section id="justifying-parallel-trends" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="justifying-parallel-trends"><span class="header-section-number">4.2</span> Justifying parallel trends</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scvs_article_covid_vax_files/figure-html/p-trends-graph-print-1.png" class="img-fluid figure-img" width="960"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Prior trends for the natural logarithm of total and non-SAS business creation</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The figure shows both the trends of the natural logarithm + 1 of total business creation and also of non-SAS business creation. Both graphs show business creation seems to move together between groups, specially in the case of total business creation, although for non-SAS business creation a three period lag can be determined in the spike which begins in late 2020.</p>
+<p>To further investigate the possibility of differential prior trends, the following regression is estimated, with pre-treatment data (periods 1-20)</p>
+<p><span class="math display">\[ln(bc_{it}) = \theta_i + \theta_t + \theta_k \left( t^* \cdot G_i \right) + \sum_{j} ^ m \beta_j x + {\epsilon_{it}}\]</span></p>
+<p>which considers province and period fixed effects, as well as coefficients <span class="math inline">\(\beta_j\)</span> for all time-varying controls as seen in previous models. <span class="math inline">\(G_i\)</span> is a dummy equal to unity when the observation belongs to a treatment group province. The key parameters for this test regressions are the <span class="math inline">\(\theta_k\)</span>, which should not be statistically significant if the prior trends are similar. The reference period for this regressions is set to one period before the shock, meaning the August 2021 period dummy and interaction with treatment group are not estimated. The coefficients on the treatment-period interactions are plotted in the graph below.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scvs_article_covid_vax_files/figure-html/p-trends-reg-graph-print-1.png" class="img-fluid figure-img" width="960"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Prior trends for the natural logarithm of total and non-SAS business creation</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Results show that for total business creation there is a possibility for differential prior trends because of the earliest periods. The difference could be born from the changes caused by the pandemic onset in Ecuador in mid-March, but these results suggest the need to correct for differential prior trends by including a continuous time variable in the regressions, as it was done on some of the models that were shown in the previous section. For non-SAS business creation, two period-treatment interactions are marginally significant, November and June 2021. This makes the case for a better compliance of the parallel trends assumption in DiD models for the non-SAS business creation dependent variable. This further supports the idea that SAS company creation may be a significant confounder in causal inference for the effect of vaccination on economic recovery. With this information, it is sensible to believe that a better estimate of the average treatment effect can be found in the models that leave out SAS company creation.</p>
 </section>
 </section>
-<section id="references" class="level1 unnumbered" data-number="5">
+<section id="conclusions" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Conclusions</h1>
+<p>This paper prompts a discussion focused on causality about the effect of vaccination on economic recovery. The COVID-19 pandemic significantly disrupted business activity, but hope for return to normality existed when several vaccines were approved for mass distribution. It would be thought that vaccines may reduce the aversion to health issues from consumers, considering that a full dose has been proven to be effective in significantly reducing chances of infection. However, the evidence found from empirical modelling in Ecuador between 2020-2021 does not allow to definitely accept a causal effect of vaccines in economic recovery existed in the country.</p>
+<p>Using total business creation data from the Ecuadorian Companies, Securities and Insurance Superintendency and a two-way fixed effects difference-in-differences estimator, some models found that provinces with populations that appear to be vaccine-hesitant saw less business creation after the Delta Variant shock in September 2021. Namely, an average treatment effect (ATE) of about -21.5% is estimated with a regression-based DiD design with time-varying controls. This result is significant at the 99% confidence level after a wild bootstrap test on the DiD coefficient. However, statistical testing suggest a possibility of differential prior-trends. To control this, a continuous time variable (trend) is added to the model. In this case, a -49.5% ATE is estimated. This result is statistically significant at the 95% level. However, this estimate must not be considered without reservation, as <span class="citation" data-cites="HuntingtonKlein.2021">Huntington-Klein (<a href="#ref-HuntingtonKlein.2021" role="doc-biblioref">2021</a>)</span> suggests that controlling for time trend may bias the estimation.</p>
+<p>Lesser evidence of differential prior-trends is found with non-SAS business creation. The Simplified Shares Society (SAS) was introduced in Ecuador in mid 2020, so it is possible that total business creation is affected by noise caused by the spark in creation of SAS companies, which offered a less difficult legal constitution process. Using this variable in the modelling allows to determine a -25.8% ATE after controlling for time-varying factors. After controlling for time trends, the DiD estimate is -45.8%, significant at the 90% confidence level. All of these results are robust to dropping the two biggest provinces Pichincha and Guayaquil and switching Pichincha to the sole treatment variable.</p>
+<p>The most statistically reliable estimate is the one obtained from the regression of the natural log of non-SAS business creation. This means that for provinces which appear to be more vaccine-hesitant 25.8% less non-SAS business are created relative to provinces which are more open to be vaccinated. This finding stresses the importance of adequate mechanisms of vaccine distribution, given that speedy vaccination proccesses as the one implemented by the Lasso Administration seem to be positive for the economy. However, there might still be reason to believe the coefficient is biased upward. In principle, the fact that vaccine-hesitant provinces see less business creation might be due to the fact that they also see higher amounts of COVID-19 cases, and thus have stricter pandemic restrictions. There is no clear way of how to quantify the degree of restrictions in Ecuador at the province-level. Using Google Mobility Reports is not useful as it might purposely partial-out economic activity effects from the DiD coefficients. Additionally, it has been mentioned that it is not recommended to use this data for over six month analyses, as mobility trends might change and the January-February 2020 baselines are not useful for making comparisons <span class="citation" data-cites="Google.nd">(<a href="#ref-Google.nd" role="doc-biblioref">Google, n.d.</a>)</span>. No other data which might measure mobility has been prepared for Ecuador, and even so it might still be difficult to believe the data is representative, as often pandemic measures might not be obeyed by all the population, with specific provinces behaving more recklessly than others [<span class="citation" data-cites="Salazar.2022">Salazar (<a href="#ref-Salazar.2022" role="doc-biblioref">2022</a>)</span>; <span class="citation" data-cites="Gonzalez.2021">González (<a href="#ref-Gonzalez.2021" role="doc-biblioref">2021</a>)</span>).</p>
+<p>Further, given the possibility that there are differential prior trends (although small) and that time trend controls may not be useful for eliciting true causal effects, there would be a need to redesign the causal research framework, perhaps by selecting other kinds of treatment groups and/or shocks. The Omicron variant may pose as a stronger exogenous shock that can be investigated as a natural experiment, although the relatively mild symptoms it causes might not allow to see true diverging trends between treatment groups. As an alternative, analyzing greater time horizons and using multiple timing of treatments in the DiD design, depending on the availability of data. Using greater amounts of data and perhaps studying multiple countries in a same continent might be a good way to average out confounding effects such as the reduction of entry costs, such as the establishment of the SAS. The fact that removing SAS companies might also be evidence for the idea that in Ecuador formal business creation is driven by entry costs, which means that business creation may not accurately represent economic recovery. However, no other variables exist at the frequency and regional hierarchy that can proxy economic activity as well as business creation. While variations in job contract amounts and number of taxpayers in the IRS system might be used, these might pose problems of their own as measurement error or simultaneity with the explanatory variables. All in all, this paper makes an initial attempt at inferring causality using empirical research, and the findings seem to be in line with what is expected of the vaccination process in the health community as well as the findings by <span class="citation" data-cites="Furceri.2021">Furceri et al. (<a href="#ref-Furceri.2021" role="doc-biblioref">2021</a>)</span>.</p>
+</section>
+<section id="references" class="level1 unnumbered" data-number="6">
 
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">5 References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">6 References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
 <div id="ref-BCE.2022" class="csl-entry" role="doc-biblioentry">
 Banco Central del Ecuador. 2022. <span>“<span class="nocase">La econom<span class="nocase">í</span>a ecuatoriana creci<span class="nocase">ó</span> 4,2<span>%</span> en 2021, superando las previsiones de crecimiento m<span class="nocase">á</span>s recientes</span>.”</span> <a href="https://www.bce.fin.ec/index.php/boletines-de-prensa-archivo/item/1482-la-economia-ecuatoriana-crecio-4-2-en-2021-superando-las-previsiones-de-crecimiento-mas-recientes">https://www.bce.fin.ec/index.php/boletines-de-prensa-archivo/item/1482-la-economia-ecuatoriana-crecio-4-2-en-2021-superando-las-previsiones-de-crecimiento-mas-recientes</a>.
 </div>
@@ -601,6 +799,12 @@ Franco, Peter Tavra. 2021. <span>“<span class="nocase">Compa<span class="nocas
 <div id="ref-Furceri.2021" class="csl-entry" role="doc-biblioentry">
 Furceri, Davide, Pragyan Deb, Siddharth Kothari, Nour Tawk, Daniel Jimenez, and Jonathan David Ostry. 2021. <em><span class="nocase">The Effects of COVID-19 Vaccines on Economic Activity: International Monetary Fund Working Paper Series</span></em>. Vol. WP/21, 248. <span class="nocase">Working paper / International Monetary Fund</span>. Washington, D.C.: <span>International Monetary Fund</span>; <span>International Monetary Fund</span>. <a href="https://doi.org/10.5089/9781589063761.001">https://doi.org/10.5089/9781589063761.001</a>.
 </div>
+<div id="ref-Gonzalez.2021" class="csl-entry" role="doc-biblioentry">
+González, Javier. 2021. <span>“<span class="nocase">En Guayaquil y Quito hubo m<span class="nocase">á</span>s aglomeraciones en feriado de Navidad, seg<span class="nocase">ú</span>n balance gubernamental</span>.”</span> <a href="https://www.eluniverso.com/noticias/ecuador/en-las-dos-principales-ciudades-de-pais-quito-y-guayaquil-hubo-mas-aglomeraciones-en-el-feriado-de-navidad-nota/">https://www.eluniverso.com/noticias/ecuador/en-las-dos-principales-ciudades-de-pais-quito-y-guayaquil-hubo-mas-aglomeraciones-en-el-feriado-de-navidad-nota/</a>.
+</div>
+<div id="ref-Google.nd" class="csl-entry" role="doc-biblioentry">
+Google. n.d. <span>“<span>Community Mobility Reports Help</span>.”</span> <a href="https://support.google.com/covid19-mobility/answer/9825414?hl=en&amp;ref_topic=9822927">https://support.google.com/covid19-mobility/answer/9825414?hl=en&amp;ref_topic=9822927</a>.
+</div>
 <div id="ref-Gortaire.2020" class="csl-entry" role="doc-biblioentry">
 Gortaire, Juan Andrés. 2020. <span>“<span class="nocase">Las <span>‘Sociedades por Acciones Simplificadas’</span> en Ecuador</span>.”</span> Quito. <a href="https://www.ekosnegocios.com/articulo/las-sociedades-por-acciones-simplificadas-en-ecuador">https://www.ekosnegocios.com/articulo/las-sociedades-por-acciones-simplificadas-en-ecuador</a>.
 </div>
@@ -609,6 +813,9 @@ Hanze, Alvear &amp;. Asociados. 2020. <span>“<span class="nocase">La Sociedad 
 </div>
 <div id="ref-Heredia.2021" class="csl-entry" role="doc-biblioentry">
 Heredia, Valeria. 2021. <span>“<span class="nocase">Delta es la variante que predomina en Ecuador</span>.”</span> <a href="https://www.elcomercio.com/tendencias/sociedad/delta-variantes-ecuador-coronavirus-pandemia.html">https://www.elcomercio.com/tendencias/sociedad/delta-variantes-ecuador-coronavirus-pandemia.html</a>.
+</div>
+<div id="ref-HuntingtonKlein.2021" class="csl-entry" role="doc-biblioentry">
+Huntington-Klein, Nick. 2021. <em><span class="nocase">The Effect: An Introduction to Research Design and Causality</span></em>. 1st ed. Boca Raton: <span>Chapman <span>&amp;</span> Hall/CRC</span>. <a href="https://theeffectbook.net/">https://theeffectbook.net/</a>.
 </div>
 <div id="ref-Hurtado.2021" class="csl-entry" role="doc-biblioentry">
 Hurtado, Sebastián. 2021. <span>“<span class="nocase">The Ups and Downs of Guillermo Lasso</span>.”</span> <a href="https://americasquarterly.org/article/the-ups-and-downs-of-guillermo-lasso/">https://americasquarterly.org/article/the-ups-and-downs-of-guillermo-lasso/</a>.
@@ -643,6 +850,9 @@ Madrid, Roxana. 2021. <span>“<span class="nocase">Lasso expone su propuesta de
 <div id="ref-Mandavilli.2020" class="csl-entry" role="doc-biblioentry">
 Mandavilli, Apoorva. 2020. <span>“<span>Wondering About Social Distancing?</span>”</span> <a href="https://www.nytimes.com/2020/03/16/smarter-living/coronavirus-social-distancing.html">https://www.nytimes.com/2020/03/16/smarter-living/coronavirus-social-distancing.html</a>.
 </div>
+<div id="ref-Mena.nd" class="csl-entry" role="doc-biblioentry">
+Mena, Ana Cristina. n.d. <span>“<span class="nocase">El sistema de salud ecuatoriano y la COVID-19</span>.”</span> <span>Organizaci<span>ó</span>n Mundial del Trabajo: OIT Pa<span>í</span>ses Andinos</span>. <a href="https://www.ilo.org/wcmsp5/groups/public/---americas/---ro-lima/---sro-lima/documents/publication/wcms_799790.pdf">https://www.ilo.org/wcmsp5/groups/public/---americas/---ro-lima/---sro-lima/documents/publication/wcms_799790.pdf</a>.
+</div>
 <div id="ref-Mendoza.2021" class="csl-entry" role="doc-biblioentry">
 Mendoza, Daniela. 2021. <span>“<span class="nocase">Ecuador ha detectado 85 casos de la variante delta en su pa<span class="nocase">í</span>s</span>.”</span> <a href="https://www.aa.com.tr/es/mundo/ecuador-ha-detectado-85-casos-de-la-variante-delta-en-su-pa%C3%ADs/2316134">https://www.aa.com.tr/es/mundo/ecuador-ha-detectado-85-casos-de-la-variante-delta-en-su-pa%C3%ADs/2316134</a>.
 </div>
@@ -655,11 +865,17 @@ Mulligan, Casey B. 2021. <span>“<span class="nocase">Economic Activity and the
 <div id="ref-Naranjo.2020" class="csl-entry" role="doc-biblioentry">
 Naranjo, Sebastián. 2020. <span>“<span class="nocase">Ecuador registr<span class="nocase">ó</span> hasta julio un exceso de mortalidad de 80,2<span>%</span></span>.”</span> <a href="https://www.revistagestion.ec/sociedad-analisis/ecuador-registro-hasta-julio-un-exceso-de-mortalidad-de-802">https://www.revistagestion.ec/sociedad-analisis/ecuador-registro-hasta-julio-un-exceso-de-mortalidad-de-802</a>.
 </div>
+<div id="ref-OrtizPrado.2020" class="csl-entry" role="doc-biblioentry">
+Ortiz-Prado, Esteban, and Raúl Fernández-Naranjo. 2020. <span>“<span class="nocase">Impacto de la COVID-19 en el Ecuador: De los datos inexactos a las muertes en exceso</span>.”</span> <em><span>Revista Ecuatoriana de Neurologia</span></em> 29 (2): 8–11. <a href="https://doi.org/10.46997/revecuatneurol29200008">https://doi.org/10.46997/revecuatneurol29200008</a>.
+</div>
 <div id="ref-Polack.2020" class="csl-entry" role="doc-biblioentry">
 Polack, Fernando P., Stephen J. Thomas, Nicholas Kitchin, Judith Absalon, Alejandra Gurtman, Stephen Lockhart, John L. Perez, et al. 2020. <span>“<span class="nocase">Safety and Efficacy of the BNT162b2 mRNA Covid-19 Vaccine</span>.”</span> <em><span>The New England Journal of Medicine</span></em> 383 (27): 2603–15. <a href="https://doi.org/10.1056/NEJMoa2034577">https://doi.org/10.1056/NEJMoa2034577</a>.
 </div>
 <div id="ref-Roodman.2019" class="csl-entry" role="doc-biblioentry">
 Roodman, David, Morten Ørregaard Nielsen, James G. MacKinnon, and Matthew D. Webb. 2019. <span>“<span class="nocase">Fast and wild: Bootstrap inference in Stata using boottest</span>.”</span> <em><span>The Stata Journal: Promoting Communications on Statistics and Stata</span></em> 19 (1): 4–60. <a href="https://doi.org/10.1177/1536867X19830877">https://doi.org/10.1177/1536867X19830877</a>.
+</div>
+<div id="ref-Salazar.2022" class="csl-entry" role="doc-biblioentry">
+Salazar, Andrés. 2022. <span>“<span class="nocase">Menos aglomeraciones y m<span class="nocase">á</span>s libadores se registraron en el feriado de A<span class="nocase">ñ</span>o Nuevo, seg<span class="nocase">ú</span>n reporte del ECU911; 1<span class="math inline">\(\prime\)</span>233.253 personas se movilizaron durante d<span class="nocase">í</span>as de asueto</span>.”</span> <a href="https://www.eluniverso.com/noticias/ecuador/menos-aglomeraciones-y-mas-libadores-se-registraron-en-el-feriado-de-ano-nuevo-segun-reporte-suicidios-turistas-viajeros-nota/">https://www.eluniverso.com/noticias/ecuador/menos-aglomeraciones-y-mas-libadores-se-registraron-en-el-feriado-de-ano-nuevo-segun-reporte-suicidios-turistas-viajeros-nota/</a>.
 </div>
 <div id="ref-Sandoval.2021" class="csl-entry" role="doc-biblioentry">
 Sandoval, Carla. 2021. <span>“<span class="nocase">Salud ordena investigar inclusi<span class="nocase">ó</span>n de <span>‘tiktokers’</span> en lista de vacunados covid-19</span>.”</span> <em><span>El Comercio</span></em>. <a href="https://www.elcomercio.com/tendencias/sociedad/salud-investigacion-tiktokers-vacunados-covid19.html">https://www.elcomercio.com/tendencias/sociedad/salud-investigacion-tiktokers-vacunados-covid19.html</a>.

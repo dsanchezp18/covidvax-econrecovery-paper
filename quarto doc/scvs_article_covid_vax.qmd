@@ -18,8 +18,8 @@ knitr:
 
 ```{r}
 # Setup options, for the whole document;
-# | label: setup
-# | include: false
+#| label: setup
+#| include: false
 
 # Load me my libraries
 
@@ -78,7 +78,7 @@ A province-level database was constructed for this paper. Monthly-published data
 To proxy economic recovery, data from the Ecuadorian regulatory and supervisory public institution for private companies *Superintendencia de Compañías, Valores y Seguros* (SCVS) is used as a dependent variable. Namely, business creation is used as a proxy for economic recovery, based on the [Companies' Directory database](https://mercadodevalores.supercias.gob.ec/reportes/directorioCompanias.jsf). The number of businesses created in any given month between January 2020 and December 2021 was computed based on the date of creation of the business in the SCVS system. The following table describes all variables used in the paper.
 
 ```{r}
-# | label: descriptive-table
+#| label: descriptive-table
 # Load my data description table from CSv (I did this one on Excel)
 
 data_descrip_df<-read.csv('../data/data_table.csv')
@@ -128,8 +128,8 @@ Given that the treatment variable implies some sort of vaccine hesitancy among t
 # Results
 
 ```{r}
-# | label: previous-model-data-wrangling
-# | include: false
+#| label: previous-model-data-wrangling
+#| include: false
 # Some data wrangling for the estimation of the regression models
 
 # Create the dependent variables in log form and relevel factors
@@ -156,9 +156,9 @@ df<-
 
 ## Model Results
 ```{r, include = F}
-# | label: regressions
-# | include: false
-# | output: false
+#| label: regressions
+#| include: false
+#| output: false
 
 # Here we write the code for our regressions to be presented in the tables in the document. 
 # We cluster by province and by month.
@@ -276,8 +276,8 @@ reg_did_list<-list(simple_lbuss,
 ```
 ```{r}
 
-# label: regressions_table1
-# output: asis
+#| label: regressions_table1
+#| output: asis
 
 # To produce the table that I used in the actual paper, I created a dataframe of the model results and exported to Excel to include an edited table. I produce the XL table that I used in the paper in the edited_reg_table.xlsx file. 
 
@@ -307,6 +307,372 @@ modelsummary(reg_did_list,
              title = 'Baseline Regression Results',
              coef_map = coefficient_names,
              stars = c('*' = .1, '**'=0.05, '***' = .01))
+
+
 ```
+
+The table above summarizes the estimation results. The Appendix shows results on wild bootstrap tests for the time trend controlled regressions and other models estimated later in the paper.
+
+Considering total business creation, it is found that the DiD estimate is negative and significant. In all models a smaller amount of total business creation is found in the treatment provinces in the treatment period. Model 2 considers interaction fixed-effects between month and province. With this control it is hoped that both time variant and invariant characteristics within a province are partialled-out from the DiD estimate. Models 3 and 4 consider some time-varying variables which do not affect the direction and statistical significance of the key parameter. It is determined that a one percentage point increase in the excess death rate is associated with an about 13% decrease in business creation. Other variables do not maintain a statistically significant relationship with total business creation. Model 5 accounts for a time trend to control for the possibility of divergent prior trends between treatment and control groups. The DiD estimate significantly increases its magnitude in absolute terms: a 49.5% decrease in business creation is associated with vaccine-hesitant provinces. The time trend is positive and significant. It is also found that an extra one robbery case is associated with a 0.01% increase in business creation; this may demonstrate the possibility that provinces with higher economic activity are also more unsafe. Results of the DiD estimate on Models 3 and 5 are robust to the wild bootstrap test as seen in the Appendix.
+
+Models 6-10 follow the same progression as Models 1-5 but considering creation of non-SAS businesses. With this change, the DiD estimate is only statistically significant when controlling for province and month interaction terms and when controlling for time trend. However, the wild bootstrap test carried out on Model 8's DiD estimate shows that the negative average treatment effect is indeed significant at the 95% confidence level. The wild bootstrap test also allow to say that the DiD estimate on Model 8 is statistically significant at the 90% confidence level. The excess death rate coefficient keeps its significance and magnitude except in the case of time-trend model, when a one percentage point increase in the rate is associated with a 22.2% decrease in business creation (non-SAS). The excess rate potentially illustrates two channels of causation between COVID-19 and deaths. The first one is actual COVID-19 deaths, whose official metric may be significantly misrreported, at least during the beginning of the pandemic [@OrtizPrado.2020]. The second one might be the deaths caused by the inability of health systems to cope with all health emergencies during the pandemic as they were saturated from COVID-19 cases. The health system in Ecuador had already been impacted from low government budget [@Mena.nd], which is why this channel of causation would be very significant. Whatever the relative importance these two channels may have on the excess death rate, the fact that the direction of the effect is consistently negative may mean that the partial effect of COVID-19 health impact is consistently detrimental for business creation in Ecuador. 
+
+Additionally, the fact that in models which consider both total and non-SAS business creation the coefficient on vaccination rate is not statistically different from zero supports the idea that the treatment and control groups are well defined as they already capture the differences between real vaccine-hesitancy. 
+
+```{r}
+#| label: robustness-checks-wrangling
+
+# Drop Pichincha and Guayas
+
+# Some base R, just for fun:
+
+df_smallprov<-
+  df[!(df$province == 'PICHINCHA' | df$province == 'GUAYAS'),]
+
+# Mistreatment 1: Only pichincha as treatment
+
+df_mistreat<-df
+
+df_mistreat$pich<-
+  ifelse(df_mistreat$province == 'PICHINCHA',1,0)
+
+df_mistreat$period
+
+df_mistreat<-
+  df_mistreat %>%
+  mutate(pich_treat = pich*post_dummy)
+
+
+```
+
+
+```{r}
+#| label: robustness-checks-models
+
+# Here we estimate the models for the robustness checks. We use the time-trends controlled model.
+
+# No Pichincha/Guayas
+
+nopich_lbuss<-
+  feols(lbuss ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df_smallprov )
+
+nopich_lnsas<-
+  feols(lnsas ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df_smallprov )
+
+# Mistreat
+
+pich_lbuss<-
+  feols(lbuss ~ pich_treat + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df_mistreat )
+
+pich_lnsas<-
+  feols(lnsas ~ pich_treat+ excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
+        cluster = ~ province + month,
+        data = df_mistreat )
+
+# List of robustness check regressions
+
+rob_regressions_list<-list(nopich_lbuss,
+                           nopich_lnsas,
+                           pich_lbuss,
+                           pich_lnsas)
+```
+```{r}
+# |label: robustness-checks-models-table
+# |include: true
+# |output : asis
+
+# Here I do the same stuff as I did before: I only include a table on the shittier side-the original one I did in Excel to comply with the journal rules
+
+# Thus, the reader of this code should assume that the number of these models include an asterisk, to match the text.
+
+modelsummary(rob_regressions_list,
+             output = 'markdown',
+             title = 'Baseline Regression Results',
+             coef_map = coefficient_names,
+             stars = c('*' = .1, '**'= 0.05, '***' = .01))
+```
+The table above considers two robustness checks run on the models which account for time-trends in the previous table, for all two dependent variables used. Models 1-2 confirm that the results of Models 1-2 are robust to dropping the biggest two provinces: Pichincha and Guayas. Changes are seen in the coefficients of the regressors. The excess death rate effect is lost, most likely due to the fact that excess deaths have concentrated on those two provinces throughout the pandemic. Models 4\*-5\* focus on an "alternate" treatment variable which equals 1 for treatment periods and only for province Pichincha. It would be expected that no effect is found with this artificial treatment, as confirmed by the results in the table. All results are also robust to the wild bootstrap test, as seen in the Appendix.
+
+## Justifying parallel trends
+
+```{r}
+#| label: prior-trends-graph
+#| include: false
+
+# This chunk creates the typical prior trends graph.
+# I first load the data for the trends, which I created with basis to the the SCVS data. 
+
+ptrends_graph_df<-read.csv('../data/ptrends_graph.csv')
+
+# I do two graphs, one with non-sas and the other one with totals. 
+
+# Plot against time
+
+ptrends_lbuss<-ggplot(ptrends_graph_df,
+                      aes(x = period, y = lbuss, color = group))+
+               scale_color_manual(values = c('#6495ED', '#FF4500'))+
+               geom_line(size = 0.8)+
+               geom_point(size = 2.15)+
+               geom_vline(xintercept = 21, linetype = 'dotted' )+
+               geom_vline(xintercept = 3, linetype = 'dotted') +
+               labs(x = '',
+                    y = 'Natural Log of Total Business Creation + 1')+
+               theme_bw()+
+               theme(panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     legend.background = element_blank(),
+                     text = element_text(size = 10))+
+               annotate('label', x = 23.2, y = 2, label = 'Treatment\nPeriod',
+                        size = 3) + 
+               annotate('label', x = 13, y = 2, label = 'COVID-19 Period',
+                        size = 3)+
+               scale_x_continuous(breaks = c(1,5,9, 13, 17, 21),
+                                  labels = c('Jan20', 
+                                             'May20',
+                                             'Sep20',
+                                             'Jan21',
+                                             'May21',
+                                             'Sep21'))
+  
+ptrends_lnsas<-ggplot(ptrends_graph_df,
+                      aes(x = period, y = lnsas, color = group))+
+               scale_color_manual(values = c('#6495ED', '#FF4500'))+
+               geom_line(size = 0.8)+
+               geom_point(size = 2.15)+
+               geom_vline(xintercept = 21, linetype = 'dotted' )+
+               geom_vline(xintercept = 3, linetype = 'dotted') +
+               labs(x = '',
+                    y = 'Natural Log of Non-SAS Business Creation + 1')+
+               theme_bw()+
+               theme(panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     legend.background = element_blank(),
+                     text = element_text(size = 10))+
+               annotate('label', x = 23.2, y = 2, label = 'Treatment\nPeriod',
+                        size = 3) + 
+               annotate('label', x = 13, y = 2, label = 'Pandemic\nperiod',
+                        size = 3) +
+               scale_x_continuous(breaks = c(1,5,9, 13, 17, 21),
+                                  labels = c('Jan20', 
+                                             'May20',
+                                             'Sep20',
+                                             'Jan21',
+                                             'May21',
+                                             'Sep21'))
+
+```
+
+```{r}
+#| label: p-trends-graph-print
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: 'Prior trends for the natural logarithm of total and non-SAS business creation'
+
+ptrends_lbuss + ptrends_lnsas +
+  plot_layout(ncol = 2,
+              guides = 'collect') &
+  theme(legend.position = 'bottom',
+        legend.box.background = element_rect(color = 'black')) & 
+  labs (color = 'Group')
+```
+
+
+The figure shows both the trends of the natural logarithm + 1 of total business creation and also of non-SAS business creation. Both graphs show business creation seems to move together between groups, specially in the case of total business creation, although for non-SAS business creation a three period lag can be determined in the spike which begins in late 2020. 
+
+To further investigate the possibility of differential prior trends, the following regression is estimated, with pre-treatment data (periods 1-20)
+
+$$ln(bc_{it}) = \theta_i + \theta_t + \theta_k \left( t^* \cdot G_i \right) + \sum_{j} ^ m \beta_j x + {\epsilon_{it}}$$
+
+which considers province and period fixed effects, as well as coefficients $\beta_j$ for all time-varying controls as seen in previous models. $G_i$ is a dummy equal to unity when the observation belongs to a treatment group province. The key parameters for this test regressions are the $\theta_k$, which should not be statistically significant if the prior trends are similar. The reference period for this regressions is set to one period before the shock, meaning the August 2021 period dummy and interaction with treatment group are not estimated. The coefficients on the treatment-period interactions are plotted in the graph below. 
+
+```{r}
+#| label: regression-paralell-trends
+#| include: false
+
+# Here I estimate the regressions I need for the graph below.
+
+# Do the test regressions with all periods, using reference level August 2021
+
+# Refactor the period factor for the reference level
+
+df$monthyear<-as.factor(df$time_cont)
+
+df$monthyear<-relevel(df$monthyear, '20')
+
+# Run the test regressions
+
+test_lbuss<-
+  feols(lbuss ~ + monthyear*treat + excessd_rate + job_change + v_deaths + robbery + transit_acc | province,
+        cluster = ~ province + month,
+        data = df)
+
+summary(test_lbuss)
+
+test_lnsas<-
+  feols(lnsas ~ + monthyear*treat + excessd_rate + job_change + v_deaths + robbery + transit_acc | province,
+        cluster = ~ province + month,
+        data = df)
+
+summary(test_lnsas)
+
+# Now to modelsummary 
+
+modelsummary(list(test_lbuss, test_lnsas),
+             output = 'dataframe') %>% write.xlsx('tables/coefplot.xlsx')
+
+# Load the data for my graph
+
+df_coefplot<-read.csv('../data/coefplot.csv')
+
+```
+```{r}
+#| label: graphs-prior-trends-regression
+#| include: false
+
+ptrendsreg_lbuss<-ggplot(df_coefplot,
+                         aes(x = period_numb, y = lbuss_coef))+
+               geom_line(size = 0.8, color = '#1a53ff')+
+               geom_point(size = 2.15)+
+               geom_errorbar(aes(ymin = lbuss_coef-(1.96*se_lbuss),
+                                 ymax = lbuss_coef+(1.96*se_lbuss)),
+                             width = 0.5)+
+               geom_vline(xintercept = 21, linetype = 'dotted' )+
+               geom_vline(xintercept = 3, linetype = 'dotted') +
+               geom_hline(yintercept = 0, linetype = 'dotted') +
+               labs(x = '',
+                    y = 'Effect on Total Business Creation')+
+               theme_bw()+
+               theme(panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     legend.background = element_blank(),
+                     text = element_text(size = 10))+
+               scale_x_continuous(breaks = c(1,5,9, 13, 17, 21),
+                                  labels = c('Jan20', 
+                                             'May20',
+                                             'Sep20',
+                                             'Jan21',
+                                             'May21',
+                                             'Sep21'))
+
+ptrendsreg_lnsas<-ggplot(df_coefplot,
+                         aes(x = period_numb, y = lnsas_coef))+
+               geom_line(size = 0.8, color = '#1a53ff')+
+               geom_point(size = 2.15)+
+               geom_errorbar(aes(ymin = lnsas_coef-(1.96*se_lnsas),
+                                 ymax = lnsas_coef+(1.96*se_lnsas)),
+                             width = 0.5)+
+               geom_vline(xintercept = 21, linetype = 'dotted' )+
+               geom_vline(xintercept = 3, linetype = 'dotted') +
+               geom_hline(yintercept = 0, linetype = 'dotted') +
+               labs(x = '',
+                    y = 'Effect on Non-SAS Business Creation')+
+               theme_bw()+
+               theme(panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(),
+                     legend.background = element_blank(),
+                     text = element_text(size = 10))+
+               scale_x_continuous(breaks = c(1,5,9, 13, 17, 21),
+                                  labels = c('Jan20', 
+                                             'May20',
+                                             'Sep20',
+                                             'Jan21',
+                                             'May21',
+                                             'Sep21'))
+
+```
+```{r}
+#| label: p-trends-reg-graph-print
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: 'Prior trends for the natural logarithm of total and non-SAS business creation'
+
+# Now, print out both graphs in only one figure.
+ptrendsreg_lbuss + ptrendsreg_lnsas +
+  plot_layout(ncol = 2)
+```
+Results show that for total business creation there is a possibility for differential prior trends because of the earliest periods. The difference could be born from the changes caused by the pandemic onset in Ecuador in mid-March, but these results suggest the need to correct for differential prior trends by including a continuous time variable in the regressions, as it was done on some of the models that were shown in the previous section. For non-SAS business creation, two period-treatment interactions are marginally significant, November and June 2021. This makes the case for a better compliance of the parallel trends assumption in DiD models for the non-SAS business creation dependent variable. This further supports the idea that SAS company creation may be a significant confounder in causal inference for the effect of vaccination on economic recovery. With this information, it is sensible to believe that a better estimate of the average treatment effect can be found in the models that leave out SAS company creation. 
+
+# Conclusions
+
+This paper prompts a discussion focused on causality about the effect of vaccination on economic recovery. The COVID-19 pandemic significantly disrupted business activity, but hope for return to normality existed when several vaccines were approved for mass distribution. It would be thought that vaccines may reduce the aversion to health issues from consumers, considering that a full dose has been proven to be effective in significantly reducing chances of infection. However, the evidence found from empirical modelling in Ecuador between 2020-2021 does not allow to definitely accept a causal effect of vaccines in economic recovery existed in the country.
+
+Using total business creation data from the Ecuadorian Companies, Securities and Insurance Superintendency and a two-way fixed effects difference-in-differences estimator, some models found that provinces with populations that appear to be vaccine-hesitant saw less business creation after the Delta Variant shock in September 2021. Namely, an average treatment effect (ATE) of about -21.5\% is estimated with a regression-based DiD design with time-varying controls. This result is significant at the 99% confidence level after a wild bootstrap test on the DiD coefficient. However, statistical testing suggest a possibility of differential prior-trends. To control this, a continuous time variable (trend) is added to the model. In this case, a -49.5% ATE is estimated. This result is statistically significant at the 95% level. However, this estimate must not be considered without reservation, as @HuntingtonKlein.2021 suggests that controlling for time trend may bias the estimation. 
+
+Lesser evidence of differential prior-trends is found with non-SAS business creation. The Simplified Shares Society (SAS) was introduced in Ecuador in mid 2020, so it is possible that total business creation is affected by noise caused by the spark in creation of SAS companies, which offered a less difficult legal constitution process. Using this variable in the modelling allows to determine a -25.8% ATE after controlling for time-varying factors. After controlling for time trends, the DiD estimate is -45.8%, significant at the 90% confidence level. All of these results are robust to dropping the two biggest provinces Pichincha and Guayaquil and switching Pichincha to the sole treatment variable. 
+
+The most statistically reliable estimate is the one obtained from the regression of the natural log of non-SAS business creation. This means that for provinces which appear to be more vaccine-hesitant 25.8% less non-SAS business are created relative to provinces which are more open to be vaccinated. This finding stresses the importance of adequate mechanisms of vaccine distribution, given that speedy vaccination proccesses as the one implemented by the Lasso Administration seem to be positive for the economy. However, there might still be reason to believe the coefficient is biased upward. In principle, the fact that vaccine-hesitant provinces see less business creation might be due to the fact that they also see higher amounts of COVID-19 cases, and thus have stricter pandemic restrictions. There is no clear way of how to quantify the degree of restrictions in Ecuador at the province-level. Using Google Mobility Reports is not useful as it might purposely partial-out economic activity effects from the DiD coefficients. Additionally, it has been mentioned that it is not recommended to use this data for over six month analyses, as mobility trends might change and the January-February 2020 baselines are not useful for making comparisons [@Google.nd]. No other data which might measure mobility has been prepared for Ecuador, and even so it might still be difficult to believe the data is representative, as often pandemic measures might not be obeyed by all the population, with specific provinces behaving more recklessly than others [@Salazar.2022; @Gonzalez.2021). 
+
+Further, given the possibility that there are differential prior trends (although small) and that time trend controls may not be useful for eliciting true causal effects, there would be a need to redesign the causal research framework, perhaps by selecting other kinds of treatment groups and/or shocks. The Omicron variant may pose as a stronger exogenous shock that can be investigated as a natural experiment, although the relatively mild symptoms it causes might not allow to see true diverging trends between treatment groups. As an alternative, analyzing greater time horizons and using multiple timing of treatments in the DiD design, depending on the availability of data. Using greater amounts of data and perhaps studying multiple countries in a same continent might be a good way to average out confounding effects such as the reduction of entry costs, such as the establishment of the SAS. The fact that removing SAS companies might also be evidence for the idea that in Ecuador formal business creation is driven by entry costs, which means that business creation may not accurately represent economic recovery. However, no other variables exist at the frequency and regional hierarchy that can proxy economic activity as well as business creation. While variations in job contract amounts and number of taxpayers in the IRS system might be used, these might pose problems of their own as measurement error or simultaneity with the explanatory variables. All in all, this paper makes an initial attempt at inferring causality using empirical research, and the findings seem to be in line with what is expected of the vaccination process in the health community as well as the findings by @Furceri.2021. 
+
+# Appendix: Wild Bootstrap Tests for Baseline Regression Models
+
+```{r}
+#| label: wild-bootstraps
+#| include: false
+
+# Here, I try to run the bootstrap tests for my regressions
+
+# All this stuff has been commented out because the package has a bug *June 2022
+
+# Do wild bootstrap tests of the trend-controlled regressions
+
+# boot_lbuss<-boottest(trend_lbuss,
+#                      clustid = c('province', 'month'),
+#                      param = 'did',
+#                      B = 9999,
+#                      seed = 5555)
+
+# summary(boot_lbuss)
+
+# boot_lnsas<-boottest(trend_lnsas,
+                     #clustid = c('province', 'month'),
+                     #param = 'did',
+                     #B = 9999,
+                     #seed = 5555)
+# summary(boot_lnsas)
+
+# The same but for the variable ones
+
+# boot_lbuss_v<-boottest(vars_lbuss,
+   #                  clustid = c('province', 'month'),
+  #                   param = 'did',
+    #                 B = 9999,
+     #                seed = 5555)
+# summary(boot_lbuss_v)
+
+# boot_lnsas_v<-boottest(vars_lnsas,
+    #                   clustid = c('province', 'month'),
+     #                   param = 'did',
+      #                 B = 9999,
+       #                seed = 5555)
+# summary(boot_lnsas_v)
+
+# Sadly, these boottests cannot be run by R for some reason. I have attached the Stata do-files which have these included. The results table in the paper are probably different to what you see as results from the do-file, but that is because of the simulation. 
+
+# The following code is what I used to produce the table in XL. I then edited it from Word to end with the final result: 
+# boot_models<-list(boot_lbuss,
+#                   boot_lnsas,
+#                   bootlbuss1,
+#                   bootlnsas1,
+#                   bootlbuss2,
+#                   bootlnsas2)
+# 
+# 
+# write.csv(df, 'data/data_for_stata.csv')
+# 
+# modelsummary(boot_models,
+#              estimate = "{estimate} ({p.value})", 
+#              statistic = "[{conf.low}; {conf.high}]",
+#              output = 'data.frame',
+#              title = 'Wild bootstrap test results') %>% write.xlsx('tables/bootstrap.xlsx')
+
+```
+
 # References
 
