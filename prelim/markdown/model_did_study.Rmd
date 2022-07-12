@@ -1,0 +1,1048 @@
+---
+title: "COVID-19 Vaccines and Economic Recovery in Ecuador 2020-2021."
+author: "Daniel Sánchez"
+date: "April 2022"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+# Introduction
+
+This is the preliminary study of COVID-19 Vaccines and Economic Recovery in Ecuador. Through empirical models, I aim to determine if there is any sign of a causal effect of vaccination in economic recovery. I will study this phenonemon from 2020 to 2021 in Ecuador. I try to implement a difference-in-differences design using several variables I created as treatments. 
+
+# Data wrangling
+Load all preliminary stuff:
+```{r setup}
+# Load libraries
+library(tidyverse)
+library(sandwich)
+library(lmtest)
+library(modelsummary)
+library(fwildclusterboot)
+library(fixest)
+library(plm)
+library(estimatr)
+library(psych)
+library(openxlsx)
+library(corrplot)
+library(stats)
+library(timetk)
+library(xts)
+library(lubridate)
+library(dygraphs)
+library(htmlwidgets)
+library(fastDummies)
+# Load the data
+df<-read.csv('../data/clean_data.csv')
+```
+
+I need to wrangle the data before I can start running models.
+
+```{r data-wrangle}
+# Create province factors (for the clustered std. errors)
+
+df$prov<-as.factor(df$province)
+
+# Create post dummy variable 
+
+df$post<-ifelse(df$post == 'post',1,0)
+
+# Create the antivax factor variable
+
+df$antivax<-as.factor(df$antivax)
+
+# Relevel
+
+df$antivax<-relevel(df$antivax, 'provax')
+
+# The same for the treatment variable (is exactly equal to the antivax variable, but treat sounds more pro)
+
+df$treat <- as.factor(df$treat)
+
+df$treat <- relevel (df$treat, 'provax')
+
+# Convert the month factor to a factor
+
+df$month<-as.factor(df$month)
+
+df$month<-relevel(df$month, 'January')
+
+# Create a year factor
+
+df$year<-as.factor(df$year)
+
+# Conservate a year numeric variable
+
+df$year_n<-as.numeric(df$year)
+
+# Change the reference level to PICHINCHA
+
+df$prov<-relevel(df$prov, 'PICHINCHA')
+
+```
+
+# Exploratory analysis
+
+## Graphs
+
+### Time series
+
+Here I will plot variables against time to see their evolution. First I need to create a month-year progression (time-series dataframe). 
+
+I first need to wrangle the dataframe a bit and sum by month and year
+
+```{r df-buss-creation}
+# Load the data
+
+df_buss<-read.csv('../data/companies.csv')
+
+# Define the date variable and convert to time series object
+
+df_buss$date <- 0 
+
+df_buss$date<-as.Date(df_buss$FECHA_CONSTITUCION,
+                      format = "%d/%m/%Y")
+
+df_buss_t<-tk_xts(df_buss, date_var = 'date')
+
+# Create a business creation dummy to sum later. 
+
+df_buss_t$creation<-1
+
+# Now, the actual summ stuff. 
+
+df_buss_monthly<-apply.monthly(df_buss_t$creation,
+                               sum)
+
+time_series_buss<-dygraph(df_buss_monthly,
+                          xlab = 'Time',
+                          ylab = 'Company Creation') %>%
+                  dyRangeSelector() %>% 
+                  dyHighlight(highlightCircleSize = 5) %>% 
+                  dyOptions(axisLineWidth = 1.5,
+                            fillGraph = T,
+                            drawGrid = F)
+
+saveWidget(time_series_buss,
+           file = '../figures/time_series_buss.html')
+  
+```
+### Correlograms
+%>% 
+I want to plot a simple correlation matrix for my variables, see what's what. 
+
+```{r corplot}
+# First create a subset of the data so that the correlation matrix makes sense
+
+df_cor<- df %>% 
+         select(buss, vax_leastone, vax_complete, deaths, excessd, excessd_rate, total_cases, case_rate, new_cases,
+                new_case_rate, taxes, taxpayers, sales, month_number, transit_acc, v_deaths, year_n, 
+                robbery, tax_pc, sales_pc_k, job_change, m_retail, m_grocery, m_parks, m_transit, m_workplace, 
+                m_residential)
+
+cor_table<-cor(df_cor,
+               use = 'complete.obs') 
+
+corrplot(cor_table,
+         method = 'square',
+         title = 'Correlogram')
+
+
+```
+Now I'd like to separate the data by year, then draw the same corrplots to see if there is any difference.
+
+For 2020:
+
+```{r corplot-2020}
+
+df_20<-subset(df, df$year == 2020)
+
+df_20_cor <- df_20 %>% 
+             select(buss, deaths, excessd, excessd_rate, total_cases, case_rate, new_cases,
+                new_case_rate, taxes, taxpayers, sales, month_number, transit_acc, v_deaths,
+                robbery, tax_pc, sales_pc_k, job_change, m_retail, m_grocery, m_parks, m_transit, m_workplace, 
+                m_residential)
+
+cor_table_20<-cor(df_20_cor,
+               use = 'complete.obs') 
+
+corrplot(cor_table_20,
+         method = 'square',
+         title = 'Correlogram')
+
+```
+For 2021:
+```{r corplot-2021}
+
+df_21<-subset(df, df$year == 2021)
+
+df_21_cor <- df_21 %>% 
+             select(buss, deaths, vax_leastone, vax_complete, excessd, excessd_rate, total_cases, case_rate, new_cases,
+                new_case_rate, taxes, taxpayers, sales, month_number, transit_acc, v_deaths,
+                robbery, tax_pc, sales_pc_k, job_change, m_retail, m_grocery, m_parks, m_transit, m_workplace, 
+                m_residential)
+
+cor_table_21<-cor(df_21_cor,
+               use = 'complete.obs') 
+
+corrplot(cor_table_21,
+         method = 'square',
+         title = 'Correlogram')
+
+```
+# Fixed FX Models with vaccination rate treatment
+
+For this section, I try to establish a differences in differences design using the vaccination rate as my treatment variable. 
+
+Run a model which includes the most basic variables. Also run the bootstrapping.
+
+```{r easy-model}
+# Model
+easy<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete | prov + month,
+            cluster = ~ prov,
+            data = df)
+
+# Bootstrapping test
+easy_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + month + prov, data = df),
+                    clustid = 'prov',
+                    param = 'post:vax_leastone',
+                    B = 9999)
+summary(easy_boot)
+```
+Add the google workplace mobility trend
+```{r easy-gog}
+easy_g<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace| prov + month,
+            cluster = ~ prov,
+            data = df)
+
+summary(easy_g)
+# Bootstrapping test
+easyg_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + month + prov + 
+                       m_workplace, data = df),
+                    clustid = 'prov',
+                    param = 'post:vax_leastone',
+                    B = 9999)
+summary(easyg_boot)
+
+```
+
+Now consider a model with some more variables. 
+
+```{r complex-g}
+complex_g<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                 transit_acc + job_change + tax_pc + sales_pc_k| prov + month,
+                 cluster = ~ prov,
+                 data = df)
+
+summary(complex_g)
+
+complexg_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                           transit_acc + job_change + tax_pc + sales_pc_k + prov + month,
+                           data = df),
+                        clustid = 'prov',
+                        param = 'post:vax_leastone',
+                        B = 9999)
+summary(complexg_boot)
+
+```
+
+Add the contagion data to see what happens
+
+```{r complex-contagion}
+complex_g_cases<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                       transit_acc + job_change + tax_pc + sales_pc_k + total_cases| prov + month,
+                 cluster = ~ prov,
+                 data = df)
+
+summary(complex_g_cases)
+
+complexgcase_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + 
+                               + robbery + transit_acc + job_change + tax_pc + sales_pc_k + prov + month,
+                               data = df),
+                               clustid = 'prov',
+                            param = 'post:vax_leastone',
+                            B = 9999)
+summary(complexg_boot)
+
+```
+
+Replaces the total cases with new cases
+
+```{r complex-contagionsnew}
+
+complex_newc<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                       transit_acc + job_change + tax_pc + sales_pc_k + new_cases| prov + month,
+                 cluster = ~ prov,
+                 data = df)
+
+summary(complex_newc)
+
+complex_newc_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + 
+                               + robbery + transit_acc + job_change + tax_pc + sales_pc_k + new_cases + prov + month,
+                               data = df),
+                            clustid = 'prov',
+                            param = 'post:vax_leastone',
+                            B = 9999)
+summary(complex_newc_boot)
+
+```
+
+Replace with total case rates
+
+```{r complex-contagionrate}
+
+complex_c1<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                       transit_acc + job_change + tax_pc + sales_pc_k + case_rate| prov + month,
+                 cluster = ~ prov,
+                 data = df)
+
+summary(complex_c1)
+
+complex_c1_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + 
+                               + robbery + transit_acc + job_change + tax_pc + sales_pc_k + case_rate + prov + month,
+                               data = df),
+                            clustid = 'prov',
+                            param = 'post:vax_leastone',
+                            B = 9999)
+summary(complex_c1_boot)
+
+```
+
+Replace with new case rates.
+
+```{r complex-newcaserate}
+
+complex_c1_new<-feols(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + robbery + 
+                       transit_acc + job_change + tax_pc + sales_pc_k + new_case_rate| prov + month,
+                 cluster = ~ prov,
+                 data = df)
+
+summary(complex_c1_new)
+
+complex_c1new_boot<-boottest(lm(buss ~ post*vax_leastone + deaths + year + v_deaths + vax_complete + m_workplace + 
+                               + robbery + transit_acc + job_change + tax_pc + sales_pc_k + new_case_rate + prov + month,
+                               data = df),
+                            clustid = 'prov',
+                            param = 'post:vax_leastone',
+                            B = 9999)
+summary(complex_c1new_boot)
+
+```
+
+Show a table with all of the models that were estimated:
+
+```{r model-table}
+modelsummary(list(easy, easy_g, complex_g, complex_g_cases, complex_newc, complex_c1,complex_c1_new),
+             stars = c('*' = .1, '**'=0.05, '***' = .01))
+```
+Now a table with all of the bootstrap stuff:
+
+```{r bootstrap-table}
+
+modelsummary(list(easy_boot, easyg_boot, complexg_boot, complexgcase_boot, complex_newc_boot, 
+                  complex_c1_boot, complex_c1new_boot), 
+             estimate = "{estimate} ({p.value})", 
+             statistic = "[{conf.low}, {conf.high}]")
+```
+
+# Fixed FX Models with antivax-provax dummy as treatment and ln(1+x) bussiness creation
+
+Here, I use an antivax-provax dummy as my treatment variable. I'd like to see if provinces which I've labelled as "anti-vax" have a tendency to create lesser businesses. I've based this indicator in the number of cases per capita reported for sicknesses that could have been otherwise prevented by a vaccine (Hep-B, parotiditis, etc.). I use TWFE for this. 
+
+## Data Wrangling
+
+I will change the way I use my dependent variable and apply a ln(1+x) transformation. Also, in order to not have a collinearity problem, I can't estimate the treatment effect, as it is a combination of several province dummies. What I will do is simply include the period and treatment interaction. 
+
+```{r wrangling_alt}
+# Create the log transformed variable
+
+df$lbuss<-log(df$buss+1) 
+
+# Also for the non_sas businesses
+
+df$lnsas<-log(df$non_sas+1)
+
+# Create the interaction
+
+df$did<-df$post* df$antivax_dic
+
+```
+
+## Models 
+
+Now I estimate a very simple model just considering the DiD estimator and corresponding FX dummies. Clustering is done by province and months now. I do the wild bootstrap test on the DiD estimator as well. 
+
+First, a simple model simply considering the DiD estimator, the period dummy and the corresponding fixed effects (not shown). Also, compare it with one that uses the interactions between year and month. 
+
+```{r twfe-simple}
+simple_twfe<-feols(lbuss ~ post + did | prov + month,
+                   data = df,
+                   vcov = ~ prov + month)
+
+boot_twfe<-boottest(simple_twfe,
+                    clustid= c('prov','month') ,
+                    param = 'did',
+                    B = 9999,
+                    seed = 1) 
+
+simple_twfe_int<-feols(lbuss ~ post + did | prov^month,
+                       data = df,
+                       vcov = ~ prov + month)
+
+simple_twfe_int_lm<-lm(lbuss ~ post + did + prov*month, 
+                       data =df)
+
+boot_twfe_int<-boottest(simple_twfe_int_lm,
+                    clustid= c('prov','month') ,
+                    param = 'did',
+                    B = 9999,
+                    seed = 1) 
+```
+
+A more complex one adding the most obvious variables, and an important month times province dummy
+
+```{r twfe-asasked}
+asked_twfe<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year | prov^month,
+                  cluster = ~ prov + month,
+                  data = df)
+summary(asked_twfe)
+
+asked_twfe_lm<-lm(lbuss ~ post + did + prov*month + vax_leastone + vax_complete + excessd + year,
+                  data = df)
+
+boot_asasked<-boottest(asked_twfe_lm,
+                       clustid = c('prov', 'month'),
+                       param = 'did',
+                       B = 9999,
+                       seed = 1)
+
+```
+Add the google mobility data to these models. 
+
+```{r twfeg}
+# With workplace
+asked_twfe_g<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_workplace| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+summary(asked_twfe_g)
+
+asked_twfeg_lm<-lm(lbuss ~ post + did + prov*month + vax_leastone + vax_complete + excessd + year + m_workplace,
+                    data = df)
+
+boot_g<-boottest(asked_twfeg_lm,
+                  clustid = c('prov', 'month'),
+                  param = 'did',
+                  B = 9999,
+                  seed = 1)
+
+# With parks
+
+asked_twfe_g1<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_parks| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+summary(asked_twfe_g1)
+
+asked_twfeg1_lm<-lm(lbuss ~ post + did + prov*month + vax_leastone + vax_complete + excessd + year + m_parks,
+                    data = df)
+
+boot_g1<-boottest(asked_twfeg1_lm,
+                  clustid = c('prov', 'month'),
+                  param = 'did',
+                  B = 9999,
+                  seed = 1)
+
+# With residential
+
+asked_twfe_g2<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+summary(asked_twfe_g2)
+
+asked_twfeg2_lm<-lm(lbuss ~ post + did + prov*month + vax_leastone + vax_complete + excessd + year + m_residential,
+                    data = df)
+
+boot_g2<-boottest(asked_twfeg2_lm,
+                  clustid = c('prov', 'month'),
+                  param = 'did',
+                  B = 9999,
+                  seed = 1)
+
+# With all of them mixed
+
+asked_twfe_g3<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(asked_twfe_g3)
+
+asked_twfe_g3_lm<-lm(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace +prov*month,
+                     data = df)
+
+boot_g3<-boottest(asked_twfe_g3_lm,
+                  clustid = c('prov','month'),
+                  param = 'did',
+                  B = 9999,
+                  seed = 1)
+
+
+```
+Add some more variables to a few more models
+
+```{r complex_alts}
+
+asked_twfe_g4<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace + case_rate| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(asked_twfe_g4)
+
+asked_twfe_g4_lm<-lm(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace + case_rate + prov*month,
+                     data = df)
+
+
+boot_g4<-boottest(asked_twfe_g4_lm,
+                       clustid = c('prov','month'),
+                       param = 'did',
+                       B = 9999,
+                       seed = 1)
+
+asked_twfe_g5<-feols(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace + new_case_rate| prov^month,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(asked_twfe_g5)
+
+asked_twfe_g5_lm<-lm(lbuss ~ post + did + vax_leastone + vax_complete + excessd + year + m_residential + m_parks
+                     + m_workplace + new_case_rate + prov*month,
+                     data = df)
+
+boot_g5<-boottest(asked_twfe_g5_lm,
+                       clustid = c('prov','month'),
+                       param = 'did',
+                       B = 9999,
+                       seed = 1)
+
+```
+
+Now compare all of them
+
+```{r table_google}
+modelsummary(list(simple_twfe,
+                  simple_twfe_int,
+                  asked_twfe,
+                  asked_twfe_g,
+                  asked_twfe_g1,
+                  asked_twfe_g2,
+                  asked_twfe_g3,
+                  asked_twfe_g4,
+                  asked_twfe_g5), 
+             stars = c('*' = .1, '**'=0.05, '***' = .01))
+
+modelsummary(list(boot_twfe,
+                  boot_twfe_int,
+                  boot_asasked,
+                  boot_g,
+                  boot_g1,
+                  boot_g2,
+                  boot_g3,
+                  boot_g4,
+                  boot_g5),
+             estimate = "{estimate} ({p.value})", 
+             statistic = "[{conf.low}, {conf.high}]")
+
+```
+# TWFE with antivax-provax and non-SAS business creation
+
+I change the dependent variable to businesses created which are NOT the newly-introduced SAS legal model in Ecuador. 
+
+```{r as_asked_nsas}
+
+asked_nsas<-feols(lnsas ~ post + did + vax_leastone + excessd + year| prov^month,
+                  cluster = ~ prov + month,
+                  data = df)
+
+summary(asked_nsas)
+
+# As in the effect, with period and province FE, but without any interaction
+asked_nsas1<-feols(lnsas ~ did + vax_leastone + excessd + robbery + v_deaths| prov + monthyear,
+                   cluster = ~ prov + monthyear,
+                   data = df)
+
+summary(asked_nsas1)
+
+
+asked_nsasg<-feols(lnsas ~ post + did + vax_leastone + excessd + year + m_workplace| prov^month,
+                   cluster = ~ prov + month,
+                   data = df)
+
+summary(asked_nsasg)
+
+```
+# Justifying paralell trends
+
+I need to try to justify parallel trends for all this to be worth it. I will run a model with period and treatment interactions. First, however, I need to actually create a period dummy. 
+
+```{r data-ptrends}
+# Create a year and month variable which I can use for graphs later
+
+df<-
+  
+df %>% 
+mutate(
+day = "01", #Create a day column just to get a full date format. The day will be dropped in the following step
+date_yr_m = as.yearmon(paste0(year,month,day), "%Y %b") #use the zoo as.yearmon() to get the year and month only
+)
+
+# Create short month and year variables
+
+df$month_short<-substr(df$month,1,3)
+
+df$year_short<-ifelse(df$year == 2020, 20, 21)
+
+# Create a factor with basis on month and year
+
+df$my<-paste(df$month_short, df$year_short, sep = '') %>% as.factor()
+
+# Create period dummies
+
+df<-dummy_cols(df, 
+               select_columns = 'my',
+               remove_first_dummy = F)
+
+# Create the interactions
+
+df$t0120<-df$antivax_dic*df$my_Jan20
+df$t0220<-df$antivax_dic*df$my_Feb20
+df$t0320<-df$antivax_dic*df$my_Mar20
+df$t0420<-df$antivax_dic*df$my_Apr20
+df$t0520<-df$antivax_dic*df$my_May20
+df$t0620<-df$antivax_dic*df$my_Jun20
+df$t0720<-df$antivax_dic*df$my_Jul20
+df$t0820<-df$antivax_dic*df$my_Aug20
+df$t0920<-df$antivax_dic*df$my_Sep20
+df$t1020<-df$antivax_dic*df$my_Oct20
+df$t1120<-df$antivax_dic*df$my_Nov20
+df$t1220<-df$antivax_dic*df$my_Dec20
+df$t0121<-df$antivax_dic*df$my_Jan21
+df$t0221<-df$antivax_dic*df$my_Feb21
+df$t0321<-df$antivax_dic*df$my_Mar21
+df$t0421<-df$antivax_dic*df$my_Apr21
+df$t0521<-df$antivax_dic*df$my_May21
+df$t0621<-df$antivax_dic*df$my_Jun21
+df$t0721<-df$antivax_dic*df$my_Jul21
+df$t0821<-df$antivax_dic*df$my_Aug21
+df$t0921<-df$antivax_dic*df$my_Sep21
+df$t1021<-df$antivax_dic*df$my_Oct21
+df$t1121<-df$antivax_dic*df$my_Nov21
+df$t1221<-df$antivax_dic*df$my_Dec21
+
+# Add a sum function for it to be more quickly
+
+sum_int_ptrends<-"df$t0120+df$t0220+df$t0320+df$t0420+df$t0520+df$t0620+df$t0720+df$t0820+df$t0920+df$t1020+df$t1120+df$t1220+df$t0121+df$t0221+df$t0321+df$t0421+df$t0521+df$t0621+df$t0721+df$t0821+df$t0921+df$t1021+df$t1121+df$t1221"
+
+
+```
+
+With this, I can run the regression of the `asasked` model with the period and treatment dummy. 
+
+```{r ptrends-reg}
+
+ptrends_reg<-feols(lbuss ~  vax_leastone + excessd + year + 
+                   t0120 + t0220+t0320+t0420+t0520+t0620+t0720+t0820+t0920+t1020+t1120+t1220+t0121+t0221+t0321+t0421+
+                   t0521+t0621+t0721+t0821+t0921+t1021+t1121+t1221| prov^month,
+                   cluster = ~ prov,
+                   data = df)
+summary(ptrends_reg)
+
+# Now simply use 2021
+
+df_21<-subset(df, df$year == 2021)
+
+ptrends_reg1<-feols(lbuss ~ post + did + vax_leastone + excessd + t0321+ t0421
+                    + t0521+t0621+t0721+t0821+t0921+t1021+t1121+t1221| prov, 
+                   cluster = ~ prov,
+                   data = df_21)
+summary(ptrends_reg1)
+
+# Now eliminate all things but the period dummies and the treatment group, prior to treatment
+
+```
+Try simply doing the model to justify parallel trends as seen in The Effect. 
+
+```{r ptrends-time}
+# Eliminate all periods before the treatment time (all things prior to September 2021)
+
+df_ptrends<-subset(df, df$time_cont < 21)
+
+# Run the regression
+
+ptrends_contime<-feols(lbuss ~ time_cont*treat,
+                       data = df_ptrends)
+
+summary(ptrends_contime, vcov = 'hetero')
+
+# Try with clusters with province
+
+ptrends_contime1<-feols(lbuss ~ time_cont*treat,
+                       cluster = ~ province,
+                       data = df_ptrends)
+
+summary(ptrends_contime1)
+
+# Try with non-sas and province clusters
+
+ptrends_nsas<-feols(lnsas ~ time_cont*treat,
+                    cluster = ~ province,
+                    data = df_ptrends)
+
+summary(ptrends_nsas)
+
+# Non-sas and month clusters
+
+ptrends_nsas1<-feols(lnsas ~ time_cont*treat,
+                     cluster = ~ month,
+                     data = df_ptrends)
+
+summary(ptrends_nsas1)
+
+# Add a quadratic term
+
+ptrends_contime2<-lm(lbuss ~ I(time_cont^2)+ time_cont*treat,
+                     data = df_ptrends)
+
+summary(ptrends_contime2)
+
+# Add cubic term
+
+ptrends_contime3<-lm(lbuss ~ I(time_cont^3)+ time_cont*treat,
+                     data = df_ptrends)
+
+summary(ptrends_contime3)
+
+# Consider time dummies instead of a continous variable
+
+ptrends_timed<-lm(lbuss ~ my*treat,
+                  data = df_ptrends)
+
+summary(ptrends_timed)
+
+# Use clustered errors here, with fixed effects
+
+ptrends_timed1<-feols(lbuss ~ my*treat | prov + my,
+                     data = df_ptrends)
+
+summary(ptrends_timed1)
+
+# Use only the province clustered errors, nothing more
+
+ptrends_timed2<-feols(lbuss ~ my*treat,
+                      cluster = ~ prov,
+                      data = df_ptrends)
+
+summary(ptrends_timed2)
+
+# Same but with the non-SAS
+
+ptrends_timedns<-feols(lnsas ~ my*treat,
+                       cluster = ~ prov + month,
+                       data = df_ptrends)
+
+summary(ptrends_timedns)
+
+# Use only the month clustered, nothing more
+
+ptrends_timed3<-feols(lbuss ~ my*treat,
+                      cluster = ~ month,
+                      data = df_ptrends)
+
+summary(ptrends_timed3)
+
+# Only use 2021 and province clusters
+
+df_ptrends21<-subset(df_ptrends, df_ptrends$year == 2021)
+
+ptrends_timed2<-feols(lbuss ~ my*treat,
+                      cluster = ~ prov,
+                      data = df_ptrends21)
+
+summary(ptrends_timed2)
+
+# Only use 2021 and period clusters
+
+ptrends_timed2<-feols(lbuss ~ my*treat,
+                      cluster = ~ month,
+                      data = df_ptrends21)
+
+summary(ptrends_timed2)
+
+```
+The interaction of the time dummies and/or trend variable is only sometimes non-significant in these test regressions. Notably, when we take out the SAS companies out of the question, there seems to be evidence of parallel trends considering many kind of robust errors. This makes the case for the models which try to explain the creation of non-SAS businesses during the pandemic. Howevers, using month-clustered errors, this seems to go away. So there might a need to include a trend variable in the DiD models. 
+
+Change things a bit and now consider time as a continuous variable. We cluster by province only, and consider time and province interactions. 
+
+```{r reg-time}
+
+# Run the regression
+
+reg_time<-feols(lbuss ~ post + did + vax_leastone + excessd + year  + robbery  + tax_pc +
+                sales_pc_k + transit_acc + job_change| prov[time_cont],
+                cluster ~ prov + month,
+                data = df)
+
+summary(reg_time)
+
+fixef_reg_time<-fixef(reg_time)
+
+# Test the interaction terms
+
+reg_time_pt<-feols(lbuss ~ vax_leastone + excessd + year + robbery  + tax_pc +
+                   sales_pc_k + transit_acc + job_change + 
+                   t0220 + t0320+t0420+t0520+t0620+t0720+t0820+t0920+t1020+t1120+t1220+t0121+t0221+t0321+t0421+
+                   t0521+t0621+t0721+t0821+t0921+t1021+t1121+t1221 | prov[time_cont],
+                   cluster ~ prov + month,
+                   data = df)
+
+summary(reg_time_pt)
+```
+
+Change again things, now eliminating province FE and adding the treatment variable for it to be estimated along with the DID estimator. Use month fixed effects only, although clustering will still be two-way.
+
+```{r reg-noprovfe}
+# First, the regression that I'd use for modelling
+
+reg_noprov<-feols(lbuss ~ post*treat + treat*(job_change + robbery + v_deaths + transit_acc + excessd + tax_pc) + 
+                  year| month,
+                  cluster = ~ prov + month,
+                  data = df)
+
+summary(reg_noprov)
+
+# Now, the one with the interactions
+
+# First, relevel the "my" variable for it to be in reference to August, one month before my event
+
+df$my<-relevel(df$my, 'Aug21')
+
+reg_noprovpt<-feols(lbuss ~ treat*my + treat*(job_change + robbery + v_deaths + transit_acc + excessd + tax_pc)| my,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(reg_noprovpt)
+
+# Try restricting to 2021 only
+
+df_21<-subset(df, df$year == 2021)
+
+df_21$my<- as.factor(df_21$monthyear)
+
+df_21$my<-relevel(df_21$my, 'August-2021')
+
+reg_noprovpt21<-feols(lbuss ~ treat*my + treat*(job_change + robbery + v_deaths + transit_acc + excessd + tax_pc)| my,
+                      cluster = ~ prov + month,
+                      data = df_21)
+
+summary(reg_noprovpt21)
+
+
+
+```
+# Defining a treatment variable with another way
+
+In this section I'd like to change things a little bit by using a k-means algorithm to define my treatment. I'll use a reduced, "yearly" dataset of provinces with some data on health-related stuff. 
+
+```{r k-means}
+# Load the data first
+df_prov<-read.xlsx('../data/province_data.xlsx')
+
+# Change the row names so the k-means stuff works
+rownames(df_prov)<-df_prov$province
+
+# Delete the province variable
+
+df_prov$province<-NULL
+
+# Normalize the data
+
+df_prov.Z<-scale(df_prov)
+
+# Now do the k-means with 3 clusters and just three variables
+
+df_prov.Z_reduced<-as.data.frame(df_prov.Z) %>% select(diseases_pc, avg_covaxrate, population)
+
+set.seed(1)
+kmeans_prov<-kmeans(df_prov.Z_reduced, 3)
+print(kmeans_prov)
+
+# Now paste the clusters in the province database
+
+df_prov$cluster <- kmeans_prov$cluster
+
+# Now create a treatment dummy
+
+df_prov$treatment<-ifelse(df_prov$cluster == 1, 1,0)
+
+# Append that information to a new dataframe
+
+# First, return the province names
+
+df_prov$province<-rownames(df_prov)
+
+# Now, create a df with just the treatment variable
+
+df_prov1<-df_prov %>% select(province, treatment)
+
+# Now, the new dataframe
+
+df_new<-df
+
+df_new<-left_join(df_new, df_prov1, by = 'province')
+
+# Create the did variable
+
+df_new$did<-df_new$post*df_new$treatment
+
+# Write a csv file
+
+write.csv(df_new, 
+          file ='df_new.csv',
+          na = '')
+
+```
+
+We have that some other provinces will fit the treatment as they have relatively low population, high disease rate and relatively low average vaccination rates. 
+
+Update: Stata says this treatment doesn't work (check my [GitHub](https://github.com/dsanchezp18)). 
+
+
+# Alternative Treatment # 1: Using "rural" provinces
+
+In this section I'd like to try and see what happens if I rethink the treatment and choose treated provinces differently. Here, I consider all of the Amazon region provinces as treated, as well as rural provinces in the Sierra provinces. 
+
+```{r as-asked-treat1}
+
+df$didt1<-df$treat1*df$post
+
+asked_t1<-feols(lbuss ~ post + didt1 + vax_leastone + excessd + year| prov^month,
+                cluster = ~ prov + month,
+                data = df)
+
+summary(asked_t1)
+
+asked_t1ns<-feols(lnsas ~ post + didt1 + vax_leastone + excessd + year| prov^month,
+                cluster = ~ prov + month,
+                data = df)
+
+summary(asked_t1ns)
+
+
+asked_t2<-feols(lbuss ~ post + didt1 + vax_leastone + excessd + year + robbery + v_deaths + transit_acc | prov + month,
+                cluster = ~ prov + month,
+                data = df)
+
+summary(asked_t2)
+
+asked_t2nsas<-feols(lnsas ~ post + didt1 + vax_leastone + excessd + year + robbery + v_deaths + transit_acc | 
+                    prov + month,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(asked_t2nsas)
+
+```
+Let us check for parallel trends using prior trends.
+
+```{r ptrends-rural}
+
+ptrends_rur<-feols(lbuss ~ treat1*time_cont,
+                   data = df_ptrends)
+
+summary(ptrends_rur, vcov = 'hetero')
+
+ptrends_rur1<-feols(lnsas ~ treat1*time_cont,
+                    cluster = ~ prov + month,
+                    data = df_ptrends)
+
+summary(ptrends_rur1)
+
+```
+No, doesn't really work. 
+
+# Alternative Treatment 3: Indigenous populations
+
+Some Ecuadorian sources have said that those with most vaccine resistance are the indigenous populations. I try switching the treatment to provinces with relatively high indigenous populations. 
+
+```{r as-asked-treat1}
+
+df$didt3<-df$treat3*df$post
+
+asked_t3<-feols(lbuss ~ post + didt3 + vax_leastone + excessd + year| prov^month,
+                cluster = ~ prov + month,
+                data = df)
+
+summary(asked_t3)
+
+asked_t3ns<-feols(lnsas ~ post + didt3 + vax_leastone + excessd + year| prov^month,
+                  cluster = ~ prov + month,
+                  data = df)
+
+summary(asked_t3ns)
+
+
+asked_t3<-feols(lbuss ~ post + didt3 + vax_leastone + excessd + year + robbery + v_deaths + transit_acc | prov + month,
+                cluster = ~ prov + month,
+                data = df)
+
+summary(asked_t3)
+
+asked_t3nsas<-feols(lnsas ~ post + didt1 + vax_leastone + excessd + year + robbery + v_deaths + transit_acc | 
+                    prov + month,
+                    cluster = ~ prov + month,
+                    data = df)
+
+summary(asked_t3nsas)
+
+```
+Let us check for parallel trends using prior trends.
+
+```{r ptrends-rural}
+
+ptrends_ind<-feols(lbuss ~ treat3*time_cont,
+                   data = df_ptrends)
+
+summary(ptrends_rur, vcov = 'hetero')
+
+ptrends_ind1<-feols(lnsas ~ treat3*time_cont,
+                    cluster = ~ prov + month,
+                    data = df_ptrends)
+
+summary(ptrends_ind1)
+
+ptrends_ind2<-feols(lnsas~ treat3*my,
+                    cluster = ~ prov,
+                    data = df_ptrends)
+
+summary(ptrends_ind2)
+
+```
+
+# Leaving out Pichincha and Guayas from the sample
+
+I'd like to see what happens if I eliminate the two biggest provinces, Pichincha and Guayas.
+
+```{r df_reduced}
+df_reduced<-df %>% filter(!province %in% c('PICHINCHA', 'GUAYAS'))
+
+write.csv(df_reduced, file = 'df_reduced.csv', na = "")
+
+```
+
+
+
+
