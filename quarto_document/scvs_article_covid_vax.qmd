@@ -342,7 +342,6 @@ df_mistreat<-
   df_mistreat %>%
   mutate(pich_treat = pich*post_dummy)
 
-
 ```
 
 
