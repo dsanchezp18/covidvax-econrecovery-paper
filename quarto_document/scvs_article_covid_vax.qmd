@@ -308,7 +308,6 @@ modelsummary(reg_did_list,
              coef_map = coefficient_names,
              stars = c('*' = .1, '**'=0.05, '***' = .01))
 
-
 ```
 
 The table above summarizes the estimation results. The Appendix shows results on wild bootstrap tests for the time trend controlled regressions and other models estimated later in the paper.
