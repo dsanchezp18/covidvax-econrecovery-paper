@@ -487,7 +487,7 @@ To further investigate the possibility of differential prior trends, the followi
 
 $$ln(bc_{it}) = \theta_i + \theta_t + \theta_k \left( t^* \cdot G_i \right) + \sum_{j} ^ m \beta_j x + {\epsilon_{it}}$$
 
-which considers province and period fixed effects, as well as coefficients $\beta_j$ for all time-varying controls as seen in previous models. $G_i$ is a dummy equal to unity when the observation belongs to a treatment group province. The key parameters for this test regressions are the $\theta_k$, which should not be statistically significant if the prior trends are similar. The reference period for this regressions is set to one period before the shock, meaning the August 2021 period dummy and interaction with treatment group are not estimated. The coefficients on the treatment-period interactions are plotted in the graph below. 
+which considers province and period fixed effects, as well as coefficients $\beta_j$ for all time-varying controls as seen in previous models. $G_i$ is a dummy equal to unity when the observation belongs to a treatment group province. The key parameters for these test regressions are the $\theta_k$, which should not be statistically significant if the prior trends are similar. The reference period for this regressions is set to one period before the shock, meaning the August 2021 period dummy and interaction with treatment group are not estimated. The coefficients on the treatment-period interactions are plotted in the graph below. 
 
 ```{r}
 #| label: regression-paralell-trends
