@@ -29,6 +29,7 @@ library(patchwork) # Multiple plots in one pane
 library(fixest) # Fixed Effects OLS
 library(openxlsx) # Manage XL stuff
 library(fwildclusterboot) # Wild bootstrap tests
+library(ggfixest) # ggplot2 for fixest
 
 # Load me my data
 
@@ -66,7 +67,6 @@ In general, literature on COVID-19 and its economic effects which focuses on cau
 Regarding economic impacts, it is understood that pandemics hamper economic activity through several channels. According to @Brodeur.2021, these channels are the impact of social distancing measures, direct and indirect costs (hospitalization, loss of labor and production) as well as offsetting and cascading effects as the disruption of services are the most important. The direct channels connect macroeconomically to reductions in household consumption and wealth. The macroeconomic models which were studied by @Brodeur.2021 predict a mostly demand-deficient recession, where policy that benefits the economy's supply may not be successful in inducing recovery. Other studies quantified the opportunity cost of shutdowns in the economy, finding that shutdowns put market production in a 25% production deficit, and that medical development and innovation may reduce the shutdown cost in about 70% [@Mulligan.2021]. Additionally, @Deb.2022 find that containment measures hurt economic activity, associating a containment measure with a 10 percent loss in industrial production over 30 days of measure implementation. Regarding business creation, @Meunier.2022 find that newly registered firms fell in 58% of economies in 2020 relative to 2019, when the normal trend was to see new business creation in 2/3 of economies. 
 
 If COVID-19 was indeed an aggregate demand-intensive shock, it is natural to see a fall in business creation as potential customers become wary of spending in an uncertain environment, where health risks appear to affect the likelihood of spending. If vaccines are indeed the best way to fight the pandemic, it would be expected that economies with higher vaccination rates experience higher economic recovery. The effect of vaccines might be two-fold: on one hand more vaccination may foster less pandemic restrictions which would help economic activity as businesses are less restrained. On the other hand, vaccination may foster economic recovery by reducing the likelihood of contagion and thus increase aggregate demand for goods and services, as the likelihood of contracting COVID-19 is smaller. 
-
 @Furceri.2021 develop an empirical model of vaccination and economic effects across 46 countries, finding a positive statistically significant relationship of vaccination rates and economic activity proxied by nitrogen emissions. The effect could be understood as causal given that "vaccine surprises" are used, the key effect being that an unexpected increase in vaccination per capita is associated with increases in economic activity. Furthermore, it has been said that countries with higher vaccination rates were expected to make stronger economic recoveries according to IMF data, as the projections for regions with higher vaccine inequality were revised downward by April 2021 [@UNDP.2022]. However, this analysis does not make a causal investigation, as indeed it is countries that have been historically richer which had higher vaccination rates in 2022. The lack of causal inference research regarding this key topic is evident, considering that the results of the only study which infers a causal effect may not be applicable to countries outside their sample or at time horizons which can include stronger COVID-19 variants. 
 
 # Methodology
@@ -202,7 +202,7 @@ vax_lbuss<-
 
 summary(vax_lbuss)
 
-# Including a trend term to correct for violation of paralell trends
+# Including a trend term to correct for violation of parallel trends
 
 trend_lbuss<-
   feols(lbuss ~ did + excessd_rate + job_change + v_deaths + robbery + transit_acc + time_cont | province,
@@ -271,7 +271,6 @@ reg_did_list<-list(simple_lbuss,
                    vars_lnsas,
                    vax_lnsas,
                    trend_lnsas)
-
 
 ```
 ```{r}
@@ -342,8 +341,6 @@ df_mistreat<-
   mutate(pich_treat = pich*post_dummy)
 
 ```
-
-
 ```{r}
 #| label: robustness-checks-models
 
@@ -490,8 +487,9 @@ $$ln(bc_{it}) = \theta_i + \theta_t + \theta_k \left( t^* \cdot G_i \right) + \s
 which considers province and period fixed effects, as well as coefficients $\beta_j$ for all time-varying controls as seen in previous models. $G_i$ is a dummy equal to unity when the observation belongs to a treatment group province. The key parameters for these test regressions are the $\theta_k$, which should not be statistically significant if the prior trends are similar. The reference period for this regressions is set to one period before the shock, meaning the August 2021 period dummy and interaction with treatment group are not estimated. The coefficients on the treatment-period interactions are plotted in the graph below. 
 
 ```{r}
-#| label: regression-paralell-trends
+#| label: regression-parallel-trends
 #| include: false
+#| results: hide
 
 # Here I estimate the regressions I need for the graph below.
 
@@ -499,30 +497,46 @@ which considers province and period fixed effects, as well as coefficients $\bet
 
 # Refactor the period factor for the reference level
 
-df$monthyear<-as.factor(df$time_cont)
+df_prev <- df
 
-df$monthyear<-relevel(df$monthyear, '20')
+df_prev$monthyear<-as.factor(df$time_cont)
+
+df_prev$monthyear<-relevel(df$monthyear, '20')
 
 # Run the test regressions
 
-test_lbuss<-
-  feols(lbuss ~ + monthyear*treat + excessd_rate + job_change + v_deaths + robbery + transit_acc | province,
+test_lbuss <-
+  feols(lbuss ~ i(time_cont, treat_dummy, ref = 20) + excessd_rate + job_change + v_deaths + robbery + transit_acc,
+        fixef = c("province", "month"),
         cluster = ~ province + month,
         data = df)
 
 summary(test_lbuss)
 
+ggiplot(test_lbuss)
+
 test_lnsas<-
-  feols(lnsas ~ + monthyear*treat + excessd_rate + job_change + v_deaths + robbery + transit_acc | province,
+  feols(lnsas ~ i(time_cont, treat_dummy, ref = 20) + excessd_rate + job_change + v_deaths + robbery + transit_acc,
+        fixef= c("province", "month"),
         cluster = ~ province + month,
         data = df)
 
 summary(test_lnsas)
 
+ggiplot(test_lnsas)
+
+test_lnsas_prev <-
+  feols(lnsas ~ + monthyear*treat + excessd_rate + job_change + v_deaths + robbery + transit_acc | province,
+        cluster = ~ province + month,
+        data = df)
+
 # Now to modelsummary 
 
 modelsummary(list(test_lbuss, test_lnsas),
-             output = 'dataframe') %>% write.xlsx('tables/coefplot.xlsx')
+             output = 'dataframe') %>% write.xlsx("../tables/coefplot_nuevo.xlsx")
+
+modelsummary(test_lnsas_prev,
+             output = "dataframe") %>% write.xlsx('../tables/coefplot_antiguo.xlsx')
 
 # Load the data for my graph
 
