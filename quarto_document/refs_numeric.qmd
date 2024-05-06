@@ -1,0 +1,8 @@
+---
+title: "Numerical references"
+bibliography: refs.bib
+csl: apa_num.csl
+format: docx
+nocite: |
+  @*
+---
